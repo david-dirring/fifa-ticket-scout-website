@@ -530,25 +530,27 @@
         /* INLINE INSTALL GUIDE */
         .install-inline {
             max-width: 580px;
-            margin: 2rem auto 0;
+            margin: 1.75rem auto 0;
             text-align: left;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(0,166,81,0.08);
+            border: 1.5px solid rgba(0,166,81,0.45);
             border-radius: 12px;
             padding: 1.25rem 1.5rem;
+            transition: background 0.2s, border-color 0.2s;
         }
+        .install-inline:hover { background: rgba(0,166,81,0.12); border-color: rgba(0,166,81,0.6); }
         .install-inline summary {
             cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: rgba(255,255,255,0.7);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--white);
             list-style: none;
             text-align: center;
         }
         .install-inline summary::-webkit-details-marker { display: none; }
-        .install-inline summary::after { content: " \25BC"; font-size: 0.65rem; }
+        .install-inline summary::after { content: " \25BC"; font-size: 0.75rem; color: var(--green); }
         .install-inline[open] summary::after { content: " \25B2"; }
-        .install-inline[open] summary { margin-bottom: 1rem; color: rgba(255,255,255,0.9); }
+        .install-inline[open] summary { margin-bottom: 1rem; color: var(--white); }
         .install-option-label {
             font-size: 0.7rem;
             font-weight: 700;
@@ -679,7 +681,7 @@
     <ul>
         <li><a href="#features">Features</a></li>
         <li><a href="#pricing">Pricing</a></li>
-        <li><a href="https://github.com/david-dirring/fifa-ticket-scout" target="_blank" rel="noopener noreferrer" class="nav-cta">Install Free</a></li>
+        <li><a href="#install" class="nav-cta">Install Free</a></li>
     </ul>
 </nav>
 
@@ -689,7 +691,6 @@
     <div class="hero-tagline">Every seat. Every price. At a glance.</div>
     <p>A Chrome extension that tracks real-time resale ticket prices for FIFA World Cup 2026. Stop overpaying &mdash; see every available seat, price distribution, and best deals instantly.</p>
     <div class="hero-buttons">
-        <a href="https://github.com/david-dirring/fifa-ticket-scout" target="_blank" rel="noopener noreferrer" class="btn btn-green">Install Free from GitHub</a>
         <a href="#pricing" class="btn btn-outline-white">See Pro Plans</a>
     </div>
     <details class="install-inline" id="install">
