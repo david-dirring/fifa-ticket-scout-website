@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Price Drops — FIFA Ticket Scout</title>
+  <style>
+    :root {
+      --white: #ffffff;
+      --gray-50: #f8f9fa;
+      --gray-100: #f1f3f5;
+      --gray-200: #e9ecef;
+      --gray-300: #dee2e6;
+      --gray-400: #ced4da;
+      --gray-500: #adb5bd;
+      --gray-600: #868e96;
+      --gray-700: #495057;
+      --gray-800: #343a40;
+      --gray-900: #212529;
+      --fifa-purple: #1a3d8f;
+      --fifa-purple-light: #2550b0;
+      --fifa-purple-dim: rgba(26, 61, 143, 0.08);
+      --accent: #d4213d;
+      --accent-dim: rgba(212, 33, 61, 0.08);
+      --green: #1a9e4a;
+      --green-dim: rgba(26, 158, 74, 0.1);
+      --blue: #0968b8;
+      --danger: #d44040;
+      --danger-dim: rgba(212, 64, 64, 0.08);
+      --border: #e9ecef;
+      --border-dark: #dee2e6;
+      --radius: 8px;
+      --radius-sm: 5px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--white);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+    }
+    .header h1 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gray-900);
+      letter-spacing: 0.2px;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-icon {
+      background: none;
+      border: none;
+      color: var(--gray-400);
+      padding: 5px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: all 0.15s;
+    }
+    .btn-icon:hover { color: var(--fifa-purple); background: var(--fifa-purple-dim); }
+    .btn-icon.spinning svg { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn-logout {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-500);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    .btn-logout:hover { color: var(--accent); }
+
+    /* ---- Stats Bar ---- */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat {
+      text-align: center;
+      padding: 12px 8px;
+      background: var(--white);
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--fifa-purple);
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+    }
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 3px;
+    }
+
+    /* ---- Login Card ---- */
+    .login-card {
+      max-width: 360px;
+      margin: 60px auto;
+      padding: 40px 32px;
+      text-align: center;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .login-card img { margin-bottom: 16px; }
+    .login-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+    .login-hint {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .login-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--gray-800);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .login-input:focus { border-color: var(--fifa-purple); }
+    .login-input.error { border-color: var(--danger); }
+    .login-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      background: var(--fifa-purple);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .login-btn:hover { background: var(--fifa-purple-light); }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .login-error {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--danger);
+      display: none;
+    }
+    .login-pricing {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+    .login-pricing a {
+      color: var(--fifa-purple);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    /* ---- Loading ---- */
+    .loading {
+      padding: 60px 16px;
+      text-align: center;
+      color: var(--gray-500);
+      font-size: 13px;
+    }
+    .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--fifa-purple);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    /* ---- Empty State ---- */
+    .empty-state {
+      padding: 48px 32px 40px;
+      text-align: center;
+    }
+    .empty-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+    }
+    .empty-hint {
+      font-size: 12px;
+      color: var(--gray-500);
+      line-height: 1.5;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    /* ---- Match Cards ---- */
+    .match-group { margin-bottom: 2px; }
+    .match-header {
+      padding: 12px 16px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+    .match-teams {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gray-900);
+      letter-spacing: 0.2px;
+    }
+    .match-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+    .match-meta .sep { color: var(--gray-300); }
+
+    /* ---- Seat Rows ---- */
+    .seat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    .seat-info { flex: 1; min-width: 0; }
+    .seat-location {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-800);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .seat-category {
+      font-size: 10px;
+      color: var(--gray-500);
+      margin-top: 1px;
+    }
+    .seat-prices {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .price-current {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+    .price-high {
+      font-size: 11px;
+      color: var(--gray-400);
+      text-decoration: line-through;
+    }
+    .seat-drop {
+      text-align: right;
+      flex-shrink: 0;
+      min-width: 60px;
+    }
+    .drop-amount {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+    }
+    .drop-pct {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--green);
+    }
+    .badge-type {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      text-transform: uppercase;
+    }
+    .badge-reduced {
+      background: var(--green-dim);
+      color: var(--green);
+      border: 1px solid rgba(26, 158, 74, 0.2);
+    }
+    .badge-new {
+      background: var(--fifa-purple-dim);
+      color: var(--fifa-purple);
+      border: 1px solid rgba(26, 61, 143, 0.15);
+    }
+
+    /* ---- Error banner ---- */
+    .error-banner {
+      padding: 12px 16px;
+      background: var(--danger-dim);
+      border-bottom: 1px solid rgba(212, 64, 64, 0.15);
+      color: var(--danger);
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+    }
+
+    /* ---- Responsive ---- */
+    @media (min-width: 768px) {
+      .match-group { max-width: 640px; margin: 0 auto 2px; }
+      .stats-bar { max-width: 640px; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div class="brand">
+      <img class="brand-logo" src="../fifa-ticket-scout/icon128.png" alt="">
+      <h1>Price Drops</h1>
+    </div>
+    <div class="header-actions" id="headerActions" style="display:none;">
+      <button class="btn-icon" id="refreshBtn" title="Refresh">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17"/>
+          <path d="M14.5 8a6.5 6.5 0 0 1-11.48 4.17"/>
+          <polyline points="13 1 13 4.5 9.5 4.5"/>
+          <polyline points="3 15 3 11.5 6.5 11.5"/>
+        </svg>
+      </button>
+      <button class="btn-logout" id="logoutBtn">Log out</button>
+    </div>
+  </div>
+</div>
+
+<!-- Error banner -->
+<div class="error-banner" id="errorBanner"></div>
+
+<!-- Login gate -->
+<div id="loginView">
+  <div class="login-card">
+    <img src="../fifa-ticket-scout/icon128.png" width="56" height="56" alt="">
+    <div class="login-title">FIFA Ticket Scout</div>
+    <div class="login-hint">Enter your Pro license key to view live price drops.</div>
+    <input class="login-input" id="keyInput" type="text" placeholder="Paste your license key" autocomplete="off">
+    <button class="login-btn" id="unlockBtn">Unlock</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-pricing">
+      Don't have a license? <a href="https://fifaticketscout.com/#pricing">View plans</a>
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div id="loadingView" style="display:none;">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div>Loading price drops...</div>
+  </div>
+</div>
+
+<!-- Data view -->
+<div id="dataView" style="display:none;">
+  <div class="stats-bar" id="statsBar"></div>
+  <div id="matchList"></div>
+</div>
+
+<script>
+const EDGE_URL = 'https://yaydpahqlqwesqdddgfi.supabase.co/functions/v1/get-price-drops';
+const LS_KEY = 'fts_license_key';
+
+const loginView = document.getElementById('loginView');
+const loadingView = document.getElementById('loadingView');
+const dataView = document.getElementById('dataView');
+const headerActions = document.getElementById('headerActions');
+const keyInput = document.getElementById('keyInput');
+const unlockBtn = document.getElementById('unlockBtn');
+const loginError = document.getElementById('loginError');
+const refreshBtn = document.getElementById('refreshBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const errorBanner = document.getElementById('errorBanner');
+const statsBar = document.getElementById('statsBar');
+const matchList = document.getElementById('matchList');
+
+function show(el) { el.style.display = ''; }
+function hide(el) { el.style.display = 'none'; }
+
+function showError(msg) {
+  loginError.textContent = msg;
+  show(loginError);
+  keyInput.classList.add('error');
+}
+function clearError() {
+  hide(loginError);
+  keyInput.classList.remove('error');
+}
+
+// Format price from millicents
+function fmtPrice(millicents, site) {
+  if (millicents == null) return '—';
+  const usd = site === 'lms' ? millicents / 1000 : millicents / 1000 * 1.15;
+  return '$' + usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function fmtPct(dropRaw, highPrice) {
+  if (dropRaw == null || highPrice == null || highPrice === 0) return '';
+  return '-' + ((dropRaw / highPrice) * 100).toFixed(1) + '%';
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.round(hrs / 24) + 'd ago';
+}
+
+async function fetchDrops(licenseKey) {
+  hide(loginView);
+  show(loadingView);
+  hide(dataView);
+  errorBanner.style.display = 'none';
+
+  try {
+    const resp = await fetch(EDGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ licenseKey }),
+    });
+    const json = await resp.json();
+
+    if (!json.ok) {
+      if (resp.status === 403) {
+        localStorage.removeItem(LS_KEY);
+        hide(loadingView);
+        show(loginView);
+        showError(json.error || 'Invalid or expired license key');
+        return;
+      }
+      throw new Error(json.error || 'Request failed');
+    }
+
+    hide(loadingView);
+    show(headerActions);
+    show(dataView);
+    renderData(json.data || []);
+  } catch (err) {
+    hide(loadingView);
+    show(dataView);
+    show(headerActions);
+    errorBanner.textContent = 'Failed to load data. Tap refresh to retry.';
+    errorBanner.style.display = '';
+  }
+}
+
+function renderData(rows) {
+  // Stats
+  const reduced = rows.filter(r => r.drop_type === 'reduced');
+  const newSeats = rows.filter(r => r.drop_type === 'new');
+  const matches = new Set(rows.map(r => r.match_number)).size;
+
+  statsBar.innerHTML =
+    '<div class="stat"><div class="stat-value">' + reduced.length + '</div><div class="stat-label">Price Drops</div></div>' +
+    '<div class="stat"><div class="stat-value">' + newSeats.length + '</div><div class="stat-label">New Listings</div></div>' +
+    '<div class="stat"><div class="stat-value">' + matches + '</div><div class="stat-label">Matches</div></div>';
+
+  // Group by match
+  const groups = {};
+  for (const row of rows) {
+    const key = row.match_number || row.performance_id;
+    if (!groups[key]) groups[key] = { info: row, seats: [] };
+    groups[key].seats.push(row);
+  }
+
+  // Sort groups by match_number
+  const sortedKeys = Object.keys(groups).sort((a, b) => {
+    return (groups[a].info.match_number || 0) - (groups[b].info.match_number || 0);
+  });
+
+  if (sortedKeys.length === 0) {
+    matchList.innerHTML =
+      '<div class="empty-state">' +
+        '<div class="empty-title">No price drops right now</div>' +
+        '<div class="empty-hint">Check back soon. Price drops and new listings appear here as users scan matches.</div>' +
+      '</div>';
+    return;
+  }
+
+  let html = '';
+  for (const key of sortedKeys) {
+    const g = groups[key];
+    const info = g.info;
+    // Sort: reduced first (by drop_raw desc), then new
+    g.seats.sort((a, b) => {
+      if (a.drop_type !== b.drop_type) return a.drop_type === 'reduced' ? -1 : 1;
+      return (b.drop_raw || 0) - (a.drop_raw || 0);
+    });
+
+    html += '<div class="match-group">';
+    html += '<div class="match-header">';
+    html += '<div class="match-teams">' + esc(info.matchup || 'TBD') + '</div>';
+    html += '<div class="match-meta">';
+    if (info.city) html += '<span>' + esc(info.city) + '</span><span class="sep">|</span>';
+    if (info.match_date) html += '<span>' + formatDate(info.match_date) + '</span><span class="sep">|</span>';
+    html += '<span>Match ' + (info.match_number || '?') + '</span>';
+    html += '</div></div>';
+
+    for (const seat of g.seats) {
+      html += '<div class="seat-row">';
+      html += '<div class="seat-info">';
+      const loc = [seat.block, seat.row_label ? 'Row ' + seat.row_label : '', seat.seat_number ? 'Seat ' + seat.seat_number : ''].filter(Boolean).join(', ');
+      html += '<div class="seat-location">' + esc(loc || 'Unknown') + '</div>';
+      html += '<div class="seat-category">' + esc(seat.category || '') + '</div>';
+      html += '</div>';
+
+      if (seat.drop_type === 'reduced') {
+        html += '<div class="seat-prices">';
+        html += '<div class="price-current">' + fmtPrice(seat.current_price, seat.site) + '</div>';
+        html += '<div class="price-high">' + fmtPrice(seat.high_price, seat.site) + '</div>';
+        html += '</div>';
+        html += '<div class="seat-drop">';
+        html += '<div class="drop-amount">-' + fmtPrice(seat.drop_raw, seat.site).replace('$', '$') + '</div>';
+        html += '<div class="drop-pct">' + fmtPct(seat.drop_raw, seat.high_price) + '</div>';
+        html += '</div>';
+      } else {
+        html += '<div class="seat-prices">';
+        html += '<div class="price-current">' + fmtPrice(seat.current_price, seat.site) + '</div>';
+        html += '<span class="badge-type badge-new">New</span>';
+        html += '</div>';
+        html += '<div class="seat-drop"></div>';
+      }
+
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  matchList.innerHTML = html;
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function formatDate(d) {
+  try {
+    return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch { return d; }
+}
+
+// --- Event listeners ---
+unlockBtn.addEventListener('click', () => {
+  clearError();
+  const key = keyInput.value.trim();
+  if (!key) { showError('Please enter a license key'); return; }
+  localStorage.setItem(LS_KEY, key);
+  fetchDrops(key);
+});
+
+keyInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') unlockBtn.click();
+});
+
+refreshBtn.addEventListener('click', () => {
+  const key = localStorage.getItem(LS_KEY);
+  if (!key) return;
+  refreshBtn.classList.add('spinning');
+  fetchDrops(key).finally(() => refreshBtn.classList.remove('spinning'));
+});
+
+logoutBtn.addEventListener('click', () => {
+  localStorage.removeItem(LS_KEY);
+  hide(dataView);
+  hide(headerActions);
+  errorBanner.style.display = 'none';
+  show(loginView);
+  keyInput.value = '';
+});
+
+// --- Init ---
+const savedKey = localStorage.getItem(LS_KEY);
+if (savedKey) {
+  fetchDrops(savedKey);
+} else {
+  show(loginView);
+}
+</script>
+</body>
+</html>
