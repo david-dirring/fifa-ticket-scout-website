@@ -36,6 +36,9 @@
     /* Pull-to-refresh indicator */
     .ptr-indicator{text-align:center;padding:8px;font-size:11px;color:var(--fifa-purple);font-weight:600;display:none}
 
+    .search-input{width:100%;padding:7px 10px;border:1px solid var(--border-dark);border-radius:20px;font-size:12px;font-family:inherit;color:var(--gray-800);outline:none;background:var(--gray-50);transition:border-color .15s}
+    .search-input:focus{border-color:var(--fifa-purple);background:var(--white)}
+    .search-input::placeholder{color:var(--gray-400)}
     .filter-bar{background:var(--white);border-bottom:1px solid var(--border);padding:6px 12px 4px;position:sticky;top:40px;z-index:100;transition:box-shadow .15s}
     .filter-bar.stuck{box-shadow:var(--shadow)}
     .filter-row{margin-bottom:4px}.filter-row:last-child{margin-bottom:0}
@@ -149,6 +152,9 @@
 
 <div id="mainView" style="display:none">
   <div class="filter-bar" id="filterBar">
+    <div class="filter-row"><input class="search-input" id="searchInput" type="text" placeholder="Search team, city, or stage..." autocomplete="off"></div>
+    <div class="filter-row"><div class="pills" id="stagePills"></div></div>
+    <div class="filter-row"><div class="pills" id="countryPills"></div></div>
     <div class="filter-row"><div class="filter-label">Category</div><div class="pills" id="catPills"></div></div>
     <div class="filter-row"><div class="filter-label">Type / Recency / Face Value</div><div class="pills" id="typePills"></div></div>
     <div class="filter-row"><div class="filter-label">Tickets Together</div><div class="pills" id="countPills"></div></div>
@@ -197,6 +203,9 @@ let filters={
   sites:new Set(DEFAULT_SITES),
   types:new Set(DEFAULT_TYPES),
   games:new Set(),cities:new Set(),
+  stages:new Set(), // empty = all
+  countries:new Set(), // empty = all (USA, CAN, MEX)
+  search:'',
   minCount:0, // 0 = any
 };
 let sort='dropPct',page=1,lastFetchAt=null,timerInterval=null;
@@ -210,6 +219,11 @@ function normCat(r){
   if(/1$/.test(r))return'Cat 1';if(/2$/.test(r))return'Cat 2';if(/3$/.test(r))return'Cat 3';if(/4$/.test(r))return'Cat 4';
   return'Other';
 }
+
+// Stage + country helpers
+const CITY_COUNTRY={Atlanta:'USA',Boston:'USA',Dallas:'USA',Guadalajara:'MEX',Houston:'USA','Kansas City':'USA','Los Angeles':'USA','Mexico City':'MEX',Miami:'USA',Monterrey:'MEX','NY / NJ':'USA','New York / New Jersey':'USA',Philadelphia:'USA','San Francisco':'USA',Seattle:'USA',Toronto:'CAN',Vancouver:'CAN'};
+function getStage(mn){if(!mn)return'';if(mn<=72)return'Group';if(mn<=88)return'R32';if(mn<=96)return'R16';if(mn<=100)return'QF';if(mn<=102)return'SF';if(mn===103)return'Bronze';if(mn===104)return'Final';return''}
+function getCountry(city){return CITY_COUNTRY[city]||''}
 
 function dp(mc,site){return mc==null?null:site==='lms'?mc/1000:mc/1000*1.15}
 function fmt(n){return n==null?'—':'$'+Math.round(n).toLocaleString('en-US')}
@@ -264,12 +278,17 @@ function buildClusters(rows){
 }
 
 function applyFilters(){
-  const{categories,sites,types,games,cities,minCount}=filters;
+  const{categories,sites,types,games,cities,stages,countries,search,minCount}=filters;
+  const q=search.toLowerCase().trim();
   filtered=clusters.filter(c=>{
     if(!categories.has(c._normCat))return false;
     if(!sites.has(c.site))return false;
     if(games.size>0&&!games.has(c.match_number))return false;
     if(cities.size>0&&!cities.has(c.city))return false;
+    if(stages.size>0&&!stages.has(getStage(c.match_number)))return false;
+    if(countries.size>0&&!countries.has(getCountry(c.city)))return false;
+    // Search
+    if(q&&!(c.matchup||'').toLowerCase().includes(q)&&!(c.city||'').toLowerCase().includes(q)&&!getStage(c.match_number).toLowerCase().includes(q)&&!(c.block||'').toLowerCase().includes(q))return false;
     // Type filters
     if(c.drop_type==='new'&&!types.has('New'))return false;
     if(c.drop_type==='reduced'&&!types.has('Drop'))return false;
@@ -346,27 +365,31 @@ function renderRow(c,idx){
 
   // Detail
   const teams=(c.matchup||'TBD').split(' vs ');
+  const home=teams[0]||'TBD',away=teams.length>1?teams[1]:'';
   html+=`<div class="ticket-detail" id="det-${idx}">`;
-  html+=`<div class="td-teams">${esc(teams[0]||'')} vs ${esc(teams[1]||'')}</div>`;
-  html+=`<div class="td-meta">Match ${c.match_number||'?'} &middot; ${esc(c.city||'')} &middot; ${fmtDate(c.match_date)}</div>`;
+  html+=`<div class="td-teams">${esc(home)}${away?' vs '+esc(away):''}</div>`;
+  html+=`<div class="td-meta">Match ${c.match_number||'?'} &middot; ${getStage(c.match_number)} &middot; ${esc(c.city||'')} &middot; ${fmtDate(c.match_date)}</div>`;
+  // Prominent price
+  html+=`<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--gray-900);margin:8px 0 6px;font-variant-numeric:tabular-nums">${fmt(c._dispPrice)}</div>`;
+  // Two-column: drop info (left) + face value (right)
+  html+=`<div style="display:flex;gap:16px;margin-bottom:8px">`;
+  if(c.drop_type==='reduced'){
+    html+=`<div style="flex:1"><div class="td-label">Price Drop</div><div class="td-val mono green">-${fmt(c._dropPrice)} (${c._dropPct}%)</div><div style="font-size:9px;color:var(--gray-500)">was ${fmt(c._highPrice)} ${ago(c.high_seen_at)}</div></div>`;
+  }else{
+    html+=`<div style="flex:1"><div class="td-label">Status</div><div class="td-val" style="color:var(--fifa-purple)">New listing</div><div style="font-size:9px;color:var(--gray-500)">${ago(c.detected_at)}</div></div>`;
+  }
+  if(c.face_value!=null){
+    const diff=c._fvDiffAmt,pct=c._fvDiffPct;
+    const color=diff!=null&&diff<=0?'green':'accent';
+    html+=`<div style="flex:1;text-align:right"><div class="td-label">vs Face ($${c.face_value})</div><div class="td-val mono ${color}">${diff!=null?(diff>0?'+':'')+fmt(Math.abs(diff))+' ('+(pct>0?'+':'')+pct+'%)':'—'}</div></div>`;
+  }
+  html+=`</div>`;
+  // Seat details grid
   html+=`<div class="td-grid">`;
   html+=`<div><div class="td-label">Block</div><div class="td-val">${esc(c.block||'—')}</div></div>`;
   html+=`<div><div class="td-label">Row</div><div class="td-val">${esc(c.row_label||'—')}</div></div>`;
   html+=`<div><div class="td-label">${c._count>1?'Seats':'Seat'}</div><div class="td-val">${esc(c._seatDisp||'—')}</div></div>`;
   html+=`<div><div class="td-label">Category</div><div class="td-val">${esc(c._normCat)}</div></div>`;
-  html+=`<div><div class="td-label">Price</div><div class="td-val mono">${fmt(c._dispPrice)}</div></div>`;
-  if(c.drop_type==='reduced'){
-    html+=`<div><div class="td-label">Was</div><div class="td-val mono">${fmt(c._highPrice)} (${ago(c.high_seen_at)})</div></div>`;
-    html+=`<div><div class="td-label">Drop</div><div class="td-val mono green">-${fmt(c._dropPrice)} (${c._dropPct}%)</div></div>`;
-  }else{
-    html+=`<div><div class="td-label">Listed</div><div class="td-val">${ago(c.detected_at)}</div></div>`;
-  }
-  if(c.face_value!=null){
-    const diff=c._fvDiffAmt,pct=c._fvDiffPct;
-    const color=diff!=null&&diff<=0?'green':'accent';
-    html+=`<div><div class="td-label">Face Value</div><div class="td-val mono">$${c.face_value}</div></div>`;
-    html+=`<div><div class="td-label">vs Face</div><div class="td-val mono ${color}">${diff!=null?(diff>0?'+':'')+fmt(Math.abs(diff))+' ('+(pct>0?'+':'')+pct+'%)':'—'}</div></div>`;
-  }
   html+=`</div></div>`;
   return html;
 }
@@ -376,6 +399,18 @@ function abbreviate(m){if(!m)return'TBD';return m.replace(/\b(\w{3})\w+/g,'$1').
 function buildFilterUI(){
   const catCounts={},siteCounts={};
   for(const c of clusters){catCounts[c._normCat]=(catCounts[c._normCat]||0)+1;siteCounts[c.site]=(siteCounts[c.site]||0)+1}
+
+  // Stage pills: All, Group, R32, R16, QF, SF, Bronze, Final
+  const stageOrder=['All','Group','R32','R16','QF','SF','Bronze','Final'];
+  $('stagePills').innerHTML=stageOrder.map(s=>
+    `<button class="pill${s==='All'&&filters.stages.size===0?' active':s!=='All'&&filters.stages.has(s)?' active':''}" data-f="stage" data-v="${s}">${s}</button>`
+  ).join('');
+
+  // Country pills: USA, CAN, MEX
+  const countryOrder=['USA','CAN','MEX'];
+  $('countryPills').innerHTML=countryOrder.map(c=>
+    `<button class="pill${filters.countries.has(c)?' active':''}" data-f="country" data-v="${c}">${c}</button>`
+  ).join('');
 
   // Category pills
   const catOrder=['Cat 1','Cat 2','Cat 3','Cat 4','Accessible','Supporter','Other'];
@@ -431,8 +466,8 @@ function updateMfLabel(id,set,total,all){
   else{b.textContent=set.size+' selected';b.classList.add('mf-active')}
 }
 
-function saveFilters(){localStorage.setItem(LS_FILT,JSON.stringify({categories:[...filters.categories],sites:[...filters.sites],types:[...filters.types],games:[...filters.games],cities:[...filters.cities],minCount:filters.minCount,sort}))}
-function loadFilters(){try{const f=JSON.parse(localStorage.getItem(LS_FILT));if(f){if(f.categories?.length)filters.categories=new Set(f.categories);if(f.sites?.length)filters.sites=new Set(f.sites);if(f.types?.length)filters.types=new Set(f.types);if(f.games?.length)filters.games=new Set(f.games);if(f.cities?.length)filters.cities=new Set(f.cities);if(f.minCount!=null)filters.minCount=f.minCount;if(f.sort)sort=f.sort}}catch{}}
+function saveFilters(){localStorage.setItem(LS_FILT,JSON.stringify({categories:[...filters.categories],sites:[...filters.sites],types:[...filters.types],games:[...filters.games],cities:[...filters.cities],stages:[...filters.stages],countries:[...filters.countries],search:filters.search,minCount:filters.minCount,sort}))}
+function loadFilters(){try{const f=JSON.parse(localStorage.getItem(LS_FILT));if(f){if(f.categories?.length)filters.categories=new Set(f.categories);if(f.sites?.length)filters.sites=new Set(f.sites);if(f.types?.length)filters.types=new Set(f.types);if(f.games?.length)filters.games=new Set(f.games);if(f.cities?.length)filters.cities=new Set(f.cities);if(f.stages?.length)filters.stages=new Set(f.stages);if(f.countries?.length)filters.countries=new Set(f.countries);if(f.search)filters.search=f.search;if(f.minCount!=null)filters.minCount=f.minCount;if(f.sort)sort=f.sort}}catch{}}
 
 async function fetchDrops(key){
   $('loginView').style.display='none';$('loadingView').style.display='';$('mainView').style.display='none';
@@ -505,6 +540,17 @@ document.addEventListener('click',e=>{
     }else if(f==='type'){
       if(filters.types.has(v))filters.types.delete(v);else filters.types.add(v);
       pill.classList.toggle('active',filters.types.has(v));
+    }else if(f==='stage'){
+      if(v==='All'){filters.stages.clear()}
+      else{if(filters.stages.has(v))filters.stages.delete(v);else filters.stages.add(v)}
+      // Update all stage pill active states
+      pill.parentElement.querySelectorAll('.pill').forEach(p=>{
+        const sv=p.dataset.v;
+        p.classList.toggle('active',sv==='All'?filters.stages.size===0:filters.stages.has(sv));
+      });
+    }else if(f==='country'){
+      if(filters.countries.has(v))filters.countries.delete(v);else filters.countries.add(v);
+      pill.classList.toggle('active',filters.countries.has(v));
     }else if(f==='count'){
       const n=parseInt(v);
       filters.minCount=n;
@@ -541,7 +587,14 @@ sortDd.addEventListener('change',e=>{
   sortBtn.textContent=labels[sort];sortDd.classList.remove('open');saveFilters();applySort();
 });
 
+// Search input
+$('searchInput').addEventListener('input',e=>{
+  filters.search=e.target.value;applyFilters();
+});
+
+// Update save/load to include new filters
 loadFilters();
+$('searchInput').value=filters.search||'';
 const savedKey=localStorage.getItem(LS_KEY);
 if(savedKey)fetchDrops(savedKey);else $('loginView').style.display='';
 </script>
