@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a3d8f">
   <title>Price Drops — FIFA Ticket Scout</title>
   <style>
     :root {
@@ -21,10 +22,8 @@
       --fifa-purple-light: #2550b0;
       --fifa-purple-dim: rgba(26, 61, 143, 0.08);
       --accent: #d4213d;
-      --accent-dim: rgba(212, 33, 61, 0.08);
       --green: #1a9e4a;
       --green-dim: rgba(26, 158, 74, 0.1);
-      --blue: #0968b8;
       --danger: #d44040;
       --danger-dim: rgba(212, 64, 64, 0.08);
       --border: #e9ecef;
@@ -33,441 +32,482 @@
       --radius-sm: 5px;
       --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
       --shadow: 0 2px 8px rgba(0,0,0,0.08);
+      --mono: ui-monospace, "SF Mono", Menlo, "Courier New", monospace;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      font-size: 14px;
-      line-height: 1.4;
-      background: var(--gray-50);
-      color: var(--gray-800);
+      font-size: 14px; line-height: 1.4;
+      background: var(--gray-100); color: var(--gray-800);
       -webkit-font-smoothing: antialiased;
     }
+    .container { max-width: 540px; margin: 0 auto; background: var(--white); min-height: 100vh; }
 
     /* ---- Header ---- */
-    .header {
-      background: var(--white);
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .header-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .brand-logo {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-    }
-    .header h1 {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--gray-900);
-      letter-spacing: 0.2px;
-    }
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn-icon {
-      background: none;
-      border: none;
-      color: var(--gray-400);
-      padding: 5px;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      transition: all 0.15s;
-    }
-    .btn-icon:hover { color: var(--fifa-purple); background: var(--fifa-purple-dim); }
+    .header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); background: var(--white); }
+    .header-top { display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-logo { width: 28px; height: 28px; border-radius: 6px; }
+    .brand h1 { font-size: 15px; font-weight: 700; color: var(--gray-900); letter-spacing: 0.2px; }
+    .header-sub { font-size: 11px; color: var(--gray-500); margin-top: 3px; line-height: 1.4; }
+    .header-actions { display: flex; align-items: center; gap: 6px; }
+    .btn-icon { background: none; border: none; color: var(--gray-400); padding: 6px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; transition: all 0.15s; }
+    .btn-icon:hover, .btn-icon:active { color: var(--fifa-purple); background: var(--fifa-purple-dim); }
     .btn-icon.spinning svg { animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-logout { font-size: 11px; font-weight: 600; color: var(--gray-500); background: none; border: none; cursor: pointer; }
 
-    .btn-logout {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--gray-500);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px 0;
-    }
-    .btn-logout:hover { color: var(--accent); }
+    /* ---- Sticky Filter Bar ---- */
+    .filter-bar { background: var(--white); border-bottom: 1px solid var(--border); padding: 10px 16px 8px; position: sticky; top: 0; z-index: 100; transition: box-shadow 0.15s; }
+    .filter-bar.stuck { box-shadow: var(--shadow); }
+    .filter-row { margin-bottom: 8px; }
+    .filter-row:last-child { margin-bottom: 0; }
+
+    /* Category pills */
+    .cat-pills { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+    .cat-pills::-webkit-scrollbar { display: none; }
+    .cat-pill { background: var(--white); border: 1px solid var(--border-dark); border-radius: 14px; padding: 5px 10px; font-size: 11px; font-weight: 600; color: var(--gray-600); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; font-family: inherit; }
+    .cat-pill:hover:not(.active) { border-color: var(--fifa-purple); color: var(--fifa-purple); }
+    .cat-pill.active { background: var(--fifa-purple); border-color: var(--fifa-purple); color: #fff; }
+    .cat-pill .pill-count { font-weight: 400; opacity: 0.7; margin-left: 2px; }
+
+    /* Multi-select dropdowns */
+    .filter-selects { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .mf-wrap { position: relative; }
+    .mf-btn { width: 100%; font-size: 11px; padding: 6px 8px; border: 1px solid var(--border-dark); border-radius: var(--radius); background: var(--white); color: var(--gray-700); cursor: pointer; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: inherit; }
+    .mf-btn:hover { border-color: var(--gray-500); }
+    .mf-btn.mf-active { border-color: var(--fifa-purple); color: var(--fifa-purple); font-weight: 600; }
+    .mf-dropdown { display: none; position: absolute; top: calc(100% + 2px); left: 0; min-width: 100%; max-height: 50vh; overflow-y: auto; background: var(--white); border: 1px solid var(--border-dark); border-radius: var(--radius); box-shadow: 0 4px 12px rgba(0,0,0,0.12); z-index: 200; padding: 4px 0; }
+    .mf-dropdown.open { display: block; }
+    .mf-item { display: flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: 12px; color: var(--gray-800); cursor: pointer; white-space: nowrap; }
+    .mf-item:hover { background: var(--gray-50); }
+    .mf-item input { margin: 0; accent-color: var(--fifa-purple); }
 
     /* ---- Stats Bar ---- */
-    .stats-bar {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 1px;
-      background: var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    .stat {
-      text-align: center;
-      padding: 12px 8px;
-      background: var(--white);
-    }
-    .stat-value {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--fifa-purple);
-      letter-spacing: -0.3px;
-      line-height: 1.2;
-    }
-    .stat-label {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--gray-500);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin-top: 3px;
-    }
+    .stats-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+    .stat { text-align: center; padding: 10px 8px; background: var(--white); }
+    .stat-value { font-size: 18px; font-weight: 800; color: var(--fifa-purple); letter-spacing: -0.3px; font-variant-numeric: tabular-nums; }
+    .stat-label { font-size: 9px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+
+    /* ---- Transparency ---- */
+    .transparency { padding: 6px 16px; font-size: 10px; color: var(--gray-500); background: var(--gray-50); border-bottom: 1px solid var(--border); text-align: center; }
 
     /* ---- Login Card ---- */
-    .login-card {
-      max-width: 360px;
-      margin: 60px auto;
-      padding: 40px 32px;
-      text-align: center;
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-    .login-card img { margin-bottom: 16px; }
-    .login-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--gray-900);
-      margin-bottom: 6px;
-    }
-    .login-hint {
-      font-size: 12px;
-      color: var(--gray-500);
-      margin-bottom: 20px;
-      line-height: 1.5;
-    }
-    .login-input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border-dark);
-      border-radius: var(--radius);
-      font-size: 13px;
-      font-family: inherit;
-      color: var(--gray-800);
-      outline: none;
-      transition: border-color 0.15s;
-    }
+    .login-card { max-width: 340px; margin: 60px auto; padding: 36px 28px; text-align: center; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .login-card img { margin-bottom: 14px; }
+    .login-title { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+    .login-hint { font-size: 12px; color: var(--gray-500); margin-bottom: 18px; line-height: 1.5; }
+    .login-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-dark); border-radius: var(--radius); font-size: 13px; font-family: inherit; color: var(--gray-800); outline: none; transition: border-color 0.15s; }
     .login-input:focus { border-color: var(--fifa-purple); }
     .login-input.error { border-color: var(--danger); }
-    .login-btn {
-      width: 100%;
-      margin-top: 12px;
-      padding: 10px;
-      background: var(--fifa-purple);
-      color: var(--white);
-      border: none;
-      border-radius: var(--radius);
-      font-size: 13px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
+    .login-btn { width: 100%; margin-top: 10px; padding: 10px; background: var(--fifa-purple); color: #fff; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
     .login-btn:hover { background: var(--fifa-purple-light); }
-    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .login-error {
-      margin-top: 12px;
-      font-size: 12px;
-      color: var(--danger);
-      display: none;
-    }
-    .login-pricing {
-      margin-top: 20px;
-      font-size: 12px;
-      color: var(--gray-500);
-    }
-    .login-pricing a {
-      color: var(--fifa-purple);
-      text-decoration: none;
-      font-weight: 600;
-    }
+    .login-error { margin-top: 10px; font-size: 12px; color: var(--danger); display: none; }
+    .login-footer { margin-top: 18px; font-size: 12px; color: var(--gray-500); }
+    .login-footer a { color: var(--fifa-purple); text-decoration: none; font-weight: 600; }
 
     /* ---- Loading ---- */
-    .loading {
-      padding: 60px 16px;
-      text-align: center;
-      color: var(--gray-500);
-      font-size: 13px;
-    }
-    .spinner {
-      display: inline-block;
-      width: 24px;
-      height: 24px;
-      border: 3px solid var(--border);
-      border-top-color: var(--fifa-purple);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin-bottom: 12px;
-    }
+    .loading { padding: 48px 16px; text-align: center; }
+    .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--gray-200); border-top-color: var(--fifa-purple); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 12px; }
+    .loading-text { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+    .loading-hint { font-size: 11px; color: var(--gray-500); margin-top: 4px; }
 
     /* ---- Empty State ---- */
-    .empty-state {
-      padding: 48px 32px 40px;
-      text-align: center;
-    }
-    .empty-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--gray-900);
-      margin-bottom: 8px;
-    }
-    .empty-hint {
-      font-size: 12px;
-      color: var(--gray-500);
-      line-height: 1.5;
-      max-width: 280px;
-      margin: 0 auto;
-    }
+    .empty-state { padding: 40px 24px; text-align: center; }
+    .empty-title { font-size: 15px; font-weight: 700; color: var(--gray-800); margin-bottom: 6px; }
+    .empty-hint { font-size: 12px; color: var(--gray-500); line-height: 1.5; max-width: 260px; margin: 0 auto; }
 
-    /* ---- Match Cards ---- */
-    .match-group { margin-bottom: 2px; }
-    .match-header {
-      padding: 12px 16px;
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-    }
-    .match-teams {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--gray-900);
-      letter-spacing: 0.2px;
-    }
-    .match-meta {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11.5px;
-      color: var(--gray-500);
-      margin-top: 2px;
-    }
+    /* ---- Match Groups ---- */
+    .match-group { border-bottom: 1px solid var(--border); }
+    .match-hdr { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: var(--white); transition: background 0.1s; user-select: none; }
+    .match-hdr:active { background: var(--gray-50); }
+    .match-info { flex: 1; min-width: 0; }
+    .match-teams { font-size: 14px; font-weight: 700; color: var(--gray-900); }
+    .match-meta { display: flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--gray-500); margin-top: 2px; flex-wrap: wrap; }
     .match-meta .sep { color: var(--gray-300); }
+    .match-summary { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .summary-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; }
+    .summary-badge.drop { background: var(--green-dim); color: var(--green); }
+    .summary-badge.new { background: var(--fifa-purple-dim); color: var(--fifa-purple); }
+    .chevron { width: 14px; height: 14px; transition: transform 0.2s; color: var(--gray-400); flex-shrink: 0; margin-left: 4px; }
+    .chevron.open { transform: rotate(180deg); }
+    .match-body { overflow: hidden; }
 
     /* ---- Seat Rows ---- */
-    .seat-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 16px;
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      gap: 8px;
-    }
-    .seat-info { flex: 1; min-width: 0; }
-    .seat-location {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--gray-800);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .seat-category {
-      font-size: 10px;
-      color: var(--gray-500);
-      margin-top: 1px;
-    }
-    .seat-prices {
-      text-align: right;
-      flex-shrink: 0;
-    }
-    .price-current {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--gray-900);
-    }
-    .price-high {
-      font-size: 11px;
-      color: var(--gray-400);
-      text-decoration: line-through;
-    }
-    .seat-drop {
-      text-align: right;
-      flex-shrink: 0;
-      min-width: 60px;
-    }
-    .drop-amount {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--green);
-    }
-    .drop-pct {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--green);
-    }
-    .badge-type {
-      display: inline-block;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      padding: 2px 6px;
-      border-radius: 8px;
-      text-transform: uppercase;
-    }
-    .badge-reduced {
-      background: var(--green-dim);
-      color: var(--green);
-      border: 1px solid rgba(26, 158, 74, 0.2);
-    }
-    .badge-new {
-      background: var(--fifa-purple-dim);
-      color: var(--fifa-purple);
-      border: 1px solid rgba(26, 61, 143, 0.15);
-    }
+    .seat-row { display: flex; align-items: center; padding: 9px 16px; border-top: 1px solid var(--gray-100); gap: 8px; }
+    .seat-loc { flex: 1; min-width: 0; }
+    .seat-block { font-size: 12px; font-weight: 600; color: var(--gray-800); }
+    .seat-detail { font-size: 10px; color: var(--gray-500); margin-top: 1px; }
+    .seat-cat { display: inline-block; font-size: 9px; font-weight: 600; color: var(--gray-500); background: var(--gray-100); padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+    .seat-prices { display: flex; align-items: baseline; gap: 4px; flex-shrink: 0; }
+    .price-old { font-family: var(--mono); font-size: 11px; color: var(--gray-400); text-decoration: line-through; font-variant-numeric: tabular-nums; }
+    .price-arrow { color: var(--gray-300); font-size: 10px; }
+    .price-now { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--gray-900); font-variant-numeric: tabular-nums; }
+    .seat-drop { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; min-width: 50px; }
+    .drop-amt { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
+    .drop-pct { font-size: 9px; font-weight: 600; color: var(--green); }
+    .drop-was { font-size: 10px; color: var(--green); font-weight: 600; white-space: nowrap; }
+    .badge-new { font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--fifa-purple-dim); color: var(--fifa-purple); letter-spacing: 0.5px; }
 
-    /* ---- Error banner ---- */
-    .error-banner {
-      padding: 12px 16px;
-      background: var(--danger-dim);
-      border-bottom: 1px solid rgba(212, 64, 64, 0.15);
-      color: var(--danger);
-      font-size: 12px;
-      font-weight: 600;
-      text-align: center;
-      display: none;
-    }
+    /* ---- Error ---- */
+    .error-banner { padding: 10px 16px; background: var(--danger-dim); color: var(--danger); font-size: 12px; font-weight: 600; text-align: center; display: none; border-bottom: 1px solid rgba(212,64,64,0.15); }
 
-    /* ---- Responsive ---- */
-    @media (min-width: 768px) {
-      .match-group { max-width: 640px; margin: 0 auto 2px; }
-      .stats-bar { max-width: 640px; margin: 0 auto; }
-    }
+    /* ---- Footer ---- */
+    .footer { padding: 20px 16px; text-align: center; font-size: 10px; color: var(--gray-400); border-top: 1px solid var(--border); }
+    .footer a { color: var(--gray-500); text-decoration: none; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
 <body>
+<div class="container">
 
-<!-- Header -->
-<div class="header">
-  <div class="header-top">
-    <div class="brand">
-      <img class="brand-logo" src="../fifa-ticket-scout/icon128.png" alt="">
-      <h1>Price Drops</h1>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="brand">
+        <img class="brand-logo" src="../fifa-ticket-scout/icon128.png" alt="">
+        <h1>Price Drops</h1>
+      </div>
+      <div class="header-actions" id="headerActions" style="display:none;">
+        <button class="btn-icon" id="refreshBtn" title="Refresh">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17"/><path d="M14.5 8a6.5 6.5 0 0 1-11.48 4.17"/><polyline points="13 1 13 4.5 9.5 4.5"/><polyline points="3 15 3 11.5 6.5 11.5"/></svg>
+        </button>
+        <button class="btn-logout" id="logoutBtn">Log out</button>
+      </div>
     </div>
-    <div class="header-actions" id="headerActions" style="display:none;">
-      <button class="btn-icon" id="refreshBtn" title="Refresh">
-        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17"/>
-          <path d="M14.5 8a6.5 6.5 0 0 1-11.48 4.17"/>
-          <polyline points="13 1 13 4.5 9.5 4.5"/>
-          <polyline points="3 15 3 11.5 6.5 11.5"/>
-        </svg>
-      </button>
-      <button class="btn-logout" id="logoutBtn">Log out</button>
-    </div>
+    <div class="header-sub">Real-time price drops &amp; new listings for FIFA World Cup 2026 resale tickets.</div>
   </div>
-</div>
 
-<!-- Error banner -->
-<div class="error-banner" id="errorBanner"></div>
+  <!-- Error banner -->
+  <div class="error-banner" id="errorBanner"></div>
 
-<!-- Login gate -->
-<div id="loginView">
-  <div class="login-card">
-    <img src="../fifa-ticket-scout/icon128.png" width="56" height="56" alt="">
-    <div class="login-title">FIFA Ticket Scout</div>
-    <div class="login-hint">Enter your Pro license key to view live price drops.</div>
-    <input class="login-input" id="keyInput" type="text" placeholder="Paste your license key" autocomplete="off">
-    <button class="login-btn" id="unlockBtn">Unlock</button>
-    <div class="login-error" id="loginError"></div>
-    <div class="login-pricing">
-      Don't have a license? <a href="https://fifaticketscout.com/#pricing">View plans</a>
+  <!-- Login -->
+  <div id="loginView">
+    <div class="login-card">
+      <img src="../fifa-ticket-scout/icon128.png" width="48" height="48" alt="">
+      <div class="login-title">FIFA Ticket Scout</div>
+      <div class="login-hint">Enter your Pro license key to view live price drops and new listings.</div>
+      <input class="login-input" id="keyInput" type="text" placeholder="Paste your license key" autocomplete="off">
+      <button class="login-btn" id="unlockBtn">Unlock</button>
+      <div class="login-error" id="loginError"></div>
+      <div class="login-footer">Don't have a license? <a href="https://fifaticketscout.com/#pricing">View plans</a></div>
     </div>
   </div>
-</div>
 
-<!-- Loading -->
-<div id="loadingView" style="display:none;">
-  <div class="loading">
-    <div class="spinner"></div>
-    <div>Loading price drops...</div>
+  <!-- Loading -->
+  <div id="loadingView" style="display:none;">
+    <div class="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Scanning for price drops...</div>
+      <div class="loading-hint">Checking all matches for reduced and new listings</div>
+    </div>
   </div>
-</div>
 
-<!-- Data view -->
-<div id="dataView" style="display:none;">
-  <div class="stats-bar" id="statsBar"></div>
-  <div id="matchList"></div>
+  <!-- Main content (hidden until auth) -->
+  <div id="mainView" style="display:none;">
+
+    <!-- Filter bar -->
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-row">
+        <div class="cat-pills" id="catPills"></div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-selects">
+          <div class="mf-wrap" id="gameWrap">
+            <button class="mf-btn" id="gameBtn">All games</button>
+            <div class="mf-dropdown" id="gameDd"></div>
+          </div>
+          <div class="mf-wrap" id="cityWrap">
+            <button class="mf-btn" id="cityBtn">All cities</button>
+            <div class="mf-dropdown" id="cityDd"></div>
+          </div>
+          <div class="mf-wrap" id="sortWrap">
+            <button class="mf-btn" id="sortBtn">Biggest drop</button>
+            <div class="mf-dropdown" id="sortDd">
+              <label class="mf-item"><input type="radio" name="sort" value="drop" checked> Biggest drop</label>
+              <label class="mf-item"><input type="radio" name="sort" value="price"> Cheapest</label>
+              <label class="mf-item"><input type="radio" name="sort" value="new"> Newest first</label>
+              <label class="mf-item"><input type="radio" name="sort" value="match"> Match #</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat"><div class="stat-value" id="statDrops">--</div><div class="stat-label">Price Drops</div></div>
+      <div class="stat"><div class="stat-value" id="statNew">--</div><div class="stat-label">New Listings</div></div>
+      <div class="stat"><div class="stat-value" id="statMatches">--</div><div class="stat-label">Matches</div></div>
+    </div>
+
+    <!-- Transparency -->
+    <div class="transparency">Resale prices include 15% FIFA fee</div>
+
+    <!-- Match list -->
+    <div id="matchList"></div>
+
+    <!-- Empty state -->
+    <div id="emptyState" style="display:none;">
+      <div class="empty-state">
+        <div class="empty-title">No price drops right now</div>
+        <div class="empty-hint">When sellers reduce their prices or new tickets are listed, they'll appear here.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Built by <a href="https://buymeacoffee.com/davidrd" target="_blank">David</a> &middot;
+    <a href="https://fifaticketscout.com" target="_blank">fifaticketscout.com</a>
+  </div>
 </div>
 
 <script>
 const EDGE_URL = 'https://yaydpahqlqwesqdddgfi.supabase.co/functions/v1/get-price-drops';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlheWRwYWhxbHF3ZXNxZGRkZ2ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MDg1NDEsImV4cCI6MjA5MTQ4NDU0MX0.QQJuKz9Fnb_schlS6FEioMtyRvrJVBwAL71dzitZU-g';
 const LS_KEY = 'fts_license_key';
+const LS_FILTERS = 'fts_mobile_filters';
+const DEFAULT_CATS = ['Cat 1', 'Cat 2', 'Cat 3'];
 
-const loginView = document.getElementById('loginView');
-const loadingView = document.getElementById('loadingView');
-const dataView = document.getElementById('dataView');
-const headerActions = document.getElementById('headerActions');
-const keyInput = document.getElementById('keyInput');
-const unlockBtn = document.getElementById('unlockBtn');
-const loginError = document.getElementById('loginError');
-const refreshBtn = document.getElementById('refreshBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const errorBanner = document.getElementById('errorBanner');
-const statsBar = document.getElementById('statsBar');
-const matchList = document.getElementById('matchList');
+// ---- State ----
+const S = {
+  raw: [],
+  filtered: [],
+  filters: { categories: new Set(DEFAULT_CATS), games: new Set(), cities: new Set() },
+  sort: 'drop',
+  collapsed: new Set(),
+};
 
-function show(el) { el.style.display = ''; }
-function hide(el) { el.style.display = 'none'; }
+// ---- DOM refs ----
+const $ = id => document.getElementById(id);
+const loginView = $('loginView'), loadingView = $('loadingView'), mainView = $('mainView');
+const headerActions = $('headerActions'), keyInput = $('keyInput'), loginError = $('loginError');
+const errorBanner = $('errorBanner'), matchList = $('matchList'), emptyState = $('emptyState');
+const filterBar = $('filterBar');
 
-function showError(msg) {
-  loginError.textContent = msg;
-  show(loginError);
-  keyInput.classList.add('error');
+// ---- Category normalization (mirrors heal_category_xref SQL) ----
+function normCat(raw) {
+  if (!raw) return 'Other';
+  if (/wheelchair|rollstuhl|fauteuil|accès facile|accesibilidad|barrierefrei|accompagnant|acompañante|utilisateur.*fauteuil|persona.*silla/i.test(raw)) return 'Accessible';
+  if (/supporter|tribune|grada.*aficionados|secci/i.test(raw)) return 'Supporter';
+  if (/^Fan /i.test(raw)) return 'Supporter';
+  if (/alcohol|alcool|alkohol/i.test(raw)) return 'Other';
+  if (/1$/.test(raw)) return 'Cat 1';
+  if (/2$/.test(raw)) return 'Cat 2';
+  if (/3$/.test(raw)) return 'Cat 3';
+  if (/4$/.test(raw)) return 'Cat 4';
+  return 'Other';
 }
-function clearError() {
-  hide(loginError);
-  keyInput.classList.remove('error');
-}
 
-// Format price from millicents
-function fmtPrice(millicents, site) {
-  if (millicents == null) return '—';
-  const usd = site === 'lms' ? millicents / 1000 : millicents / 1000 * 1.15;
-  return '$' + usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+// ---- Price helpers ----
+function dispPrice(mc, site) {
+  if (mc == null) return null;
+  return site === 'lms' ? mc / 1000 : mc / 1000 * 1.15;
 }
-
+function fmtUSD(n) {
+  if (n == null) return '—';
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
 function fmtPct(dropRaw, highPrice) {
-  if (dropRaw == null || highPrice == null || highPrice === 0) return '';
-  return '-' + ((dropRaw / highPrice) * 100).toFixed(1) + '%';
+  if (!dropRaw || !highPrice) return '';
+  return '-' + Math.round((dropRaw / highPrice) * 100) + '%';
+}
+function fmtDate(d) {
+  if (!d) return '';
+  try { return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); } catch { return d; }
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ---- Filter persistence ----
+function saveFilters() {
+  localStorage.setItem(LS_FILTERS, JSON.stringify({
+    categories: [...S.filters.categories],
+    games: [...S.filters.games],
+    cities: [...S.filters.cities],
+    sort: S.sort,
+  }));
+}
+function loadFilters() {
+  try {
+    const f = JSON.parse(localStorage.getItem(LS_FILTERS));
+    if (f) {
+      if (f.categories?.length) S.filters.categories = new Set(f.categories);
+      if (f.games?.length) S.filters.games = new Set(f.games);
+      if (f.cities?.length) S.filters.cities = new Set(f.cities);
+      if (f.sort) S.sort = f.sort;
+    }
+  } catch {}
 }
 
-function timeAgo(ts) {
-  if (!ts) return '';
-  const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
-  if (mins < 60) return mins + 'm ago';
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return hrs + 'h ago';
-  return Math.round(hrs / 24) + 'd ago';
+// ---- Build filter UI from data ----
+function buildFilters() {
+  // Category pills
+  const catCounts = {};
+  for (const r of S.raw) {
+    const c = normCat(r.category);
+    catCounts[c] = (catCounts[c] || 0) + 1;
+  }
+  const catOrder = ['Cat 1','Cat 2','Cat 3','Cat 4','Accessible','Supporter','Other'];
+  const pills = catOrder.filter(c => catCounts[c]).map(c => {
+    const active = S.filters.categories.has(c) ? ' active' : '';
+    return `<button class="cat-pill${active}" data-cat="${c}">${esc(c)}<span class="pill-count"> &middot;${catCounts[c]}</span></button>`;
+  }).join('');
+  $('catPills').innerHTML = pills;
+
+  // Game dropdown
+  const games = new Map();
+  for (const r of S.raw) {
+    if (!games.has(r.match_number)) games.set(r.match_number, r.matchup || 'Match ' + r.match_number);
+  }
+  const gameHtml = [...games.entries()].sort((a,b) => a[0]-b[0]).map(([mn, mu]) => {
+    const chk = S.filters.games.has(mn) ? ' checked' : '';
+    return `<label class="mf-item"><input type="checkbox" value="${mn}"${chk}> #${mn} &middot; ${esc(mu)}</label>`;
+  }).join('');
+  $('gameDd').innerHTML = gameHtml;
+  updateMfLabel('gameBtn', S.filters.games, games.size, 'All games');
+
+  // City dropdown
+  const cities = new Set(S.raw.map(r => r.city).filter(Boolean));
+  const cityHtml = [...cities].sort().map(c => {
+    const chk = S.filters.cities.has(c) ? ' checked' : '';
+    return `<label class="mf-item"><input type="checkbox" value="${c}"${chk}> ${esc(c)}</label>`;
+  }).join('');
+  $('cityDd').innerHTML = cityHtml;
+  updateMfLabel('cityBtn', S.filters.cities, cities.size, 'All cities');
+
+  // Sort
+  const sortLabels = { drop: 'Biggest drop', price: 'Cheapest', new: 'Newest first', match: 'Match #' };
+  $('sortBtn').textContent = sortLabels[S.sort] || 'Biggest drop';
+  $('sortDd').querySelectorAll('input').forEach(inp => { inp.checked = inp.value === S.sort; });
 }
 
+function updateMfLabel(btnId, filterSet, total, allLabel) {
+  const btn = $(btnId);
+  if (filterSet.size === 0 || filterSet.size === total) {
+    btn.textContent = allLabel;
+    btn.classList.remove('mf-active');
+  } else if (filterSet.size === 1) {
+    btn.textContent = [...filterSet][0];
+    btn.classList.add('mf-active');
+  } else {
+    btn.textContent = filterSet.size + ' selected';
+    btn.classList.add('mf-active');
+  }
+}
+
+// ---- Apply filters + sort ----
+function applyFilters() {
+  const { categories, games, cities } = S.filters;
+  S.filtered = S.raw.filter(r => {
+    if (!categories.has(normCat(r.category))) return false;
+    if (games.size > 0 && !games.has(r.match_number)) return false;
+    if (cities.size > 0 && !cities.has(r.city)) return false;
+    return true;
+  });
+
+  // Sort
+  if (S.sort === 'drop') {
+    S.filtered.sort((a, b) => {
+      if (a.drop_type !== b.drop_type) return a.drop_type === 'reduced' ? -1 : 1;
+      return (b.drop_raw || 0) - (a.drop_raw || 0);
+    });
+  } else if (S.sort === 'price') {
+    S.filtered.sort((a, b) => (a.current_price || 0) - (b.current_price || 0));
+  } else if (S.sort === 'new') {
+    S.filtered.sort((a, b) => {
+      if (a.drop_type !== b.drop_type) return a.drop_type === 'new' ? -1 : 1;
+      return new Date(b.detected_at || 0) - new Date(a.detected_at || 0);
+    });
+  } else {
+    S.filtered.sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
+  }
+
+  render();
+}
+
+// ---- Render ----
+function render() {
+  const reduced = S.filtered.filter(r => r.drop_type === 'reduced');
+  const newRows = S.filtered.filter(r => r.drop_type === 'new');
+
+  $('statDrops').textContent = reduced.length.toLocaleString();
+  $('statNew').textContent = newRows.length.toLocaleString();
+
+  // Group by match
+  const groups = new Map();
+  for (const r of S.filtered) {
+    const key = r.match_number || r.performance_id;
+    if (!groups.has(key)) groups.set(key, { info: r, rows: [] });
+    groups.get(key).rows.push(r);
+  }
+  $('statMatches').textContent = groups.size.toLocaleString();
+
+  if (groups.size === 0) {
+    matchList.innerHTML = '';
+    emptyState.style.display = '';
+    return;
+  }
+  emptyState.style.display = 'none';
+
+  // Sort groups by match_number (for match sort) or by first row's sort position
+  const sortedGroups = [...groups.entries()];
+  if (S.sort === 'match') {
+    sortedGroups.sort((a, b) => (a[1].info.match_number || 0) - (b[1].info.match_number || 0));
+  }
+
+  let html = '';
+  for (const [key, g] of sortedGroups) {
+    const info = g.info;
+    const collapsed = S.collapsed.has(key);
+    const dc = g.rows.filter(r => r.drop_type === 'reduced').length;
+    const nc = g.rows.filter(r => r.drop_type === 'new').length;
+
+    html += `<div class="match-group">`;
+    html += `<div class="match-hdr" data-key="${key}">`;
+    html += `<div class="match-info"><div class="match-teams">${esc(info.matchup || 'TBD')}</div>`;
+    html += `<div class="match-meta">`;
+    html += `<span>Match ${info.match_number || '?'}</span>`;
+    if (info.city) html += `<span class="sep">&middot;</span><span>${esc(info.city)}</span>`;
+    if (info.match_date) html += `<span class="sep">&middot;</span><span>${fmtDate(info.match_date)}</span>`;
+    html += `</div></div>`;
+    html += `<div class="match-summary">`;
+    if (dc) html += `<span class="summary-badge drop">${dc}</span>`;
+    if (nc) html += `<span class="summary-badge new">${nc}</span>`;
+    html += `<svg class="chevron${collapsed ? '' : ' open'}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 6 8 10 12 6"/></svg>`;
+    html += `</div></div>`;
+
+    html += `<div class="match-body" style="${collapsed ? 'display:none' : ''}">`;
+    for (const r of g.rows) {
+      const site = r.site || 'resale';
+      const cur = dispPrice(r.current_price, site);
+      const cat = normCat(r.category);
+      const loc = [r.block, r.row_label ? 'Row ' + r.row_label : '', r.seat_number ? 'Seat ' + r.seat_number : ''].filter(Boolean).join(', ');
+
+      html += `<div class="seat-row">`;
+      html += `<div class="seat-loc"><div class="seat-block">${esc(loc || 'Unknown')}<span class="seat-cat">${esc(cat)}</span></div></div>`;
+
+      if (r.drop_type === 'reduced') {
+        const hi = dispPrice(r.high_price, site);
+        const pct = r.high_price > 0 ? Math.round((r.drop_raw / r.high_price) * 100) : 0;
+        html += `<div class="seat-prices"><span class="price-now">${fmtUSD(cur)}</span></div>`;
+        html += `<div class="seat-drop"><span class="drop-was">was ${fmtUSD(hi)}, ${pct}% less</span></div>`;
+      } else {
+        html += `<div class="seat-prices"><span class="price-now">${fmtUSD(cur)}</span></div>`;
+        html += `<div class="seat-drop"><span class="badge-new">NEW</span></div>`;
+      }
+      html += `</div>`;
+    }
+    html += `</div></div>`;
+  }
+  matchList.innerHTML = html;
+}
+
+// ---- Fetch data ----
 async function fetchDrops(licenseKey) {
-  hide(loginView);
-  show(loadingView);
-  hide(dataView);
+  loginView.style.display = 'none';
+  loadingView.style.display = '';
+  mainView.style.display = 'none';
   errorBanner.style.display = 'none';
 
   try {
@@ -485,158 +525,155 @@ async function fetchDrops(licenseKey) {
     if (!json.ok) {
       if (resp.status === 403) {
         localStorage.removeItem(LS_KEY);
-        hide(loadingView);
-        show(loginView);
-        showError(json.error || 'Invalid or expired license key');
+        loadingView.style.display = 'none';
+        loginView.style.display = '';
+        loginError.textContent = json.error || 'Invalid or expired license key';
+        loginError.style.display = '';
+        keyInput.classList.add('error');
         return;
       }
-      throw new Error(json.error || 'Request failed');
+      throw new Error(json.error);
     }
 
-    hide(loadingView);
-    show(headerActions);
-    show(dataView);
-    renderData(json.data || []);
+    S.raw = json.data || [];
+    loadingView.style.display = 'none';
+    mainView.style.display = '';
+    headerActions.style.display = '';
+    buildFilters();
+    applyFilters();
   } catch (err) {
-    hide(loadingView);
-    show(dataView);
-    show(headerActions);
+    loadingView.style.display = 'none';
+    mainView.style.display = '';
+    headerActions.style.display = '';
     errorBanner.textContent = 'Failed to load data. Tap refresh to retry.';
     errorBanner.style.display = '';
   }
 }
 
-function renderData(rows) {
-  // Stats
-  const reduced = rows.filter(r => r.drop_type === 'reduced');
-  const newSeats = rows.filter(r => r.drop_type === 'new');
-  const matches = new Set(rows.map(r => r.match_number)).size;
+// ---- Event listeners ----
 
-  statsBar.innerHTML =
-    '<div class="stat"><div class="stat-value">' + reduced.length + '</div><div class="stat-label">Price Drops</div></div>' +
-    '<div class="stat"><div class="stat-value">' + newSeats.length + '</div><div class="stat-label">New Listings</div></div>' +
-    '<div class="stat"><div class="stat-value">' + matches + '</div><div class="stat-label">Matches</div></div>';
-
-  // Group by match
-  const groups = {};
-  for (const row of rows) {
-    const key = row.match_number || row.performance_id;
-    if (!groups[key]) groups[key] = { info: row, seats: [] };
-    groups[key].seats.push(row);
-  }
-
-  // Sort groups by match_number
-  const sortedKeys = Object.keys(groups).sort((a, b) => {
-    return (groups[a].info.match_number || 0) - (groups[b].info.match_number || 0);
-  });
-
-  if (sortedKeys.length === 0) {
-    matchList.innerHTML =
-      '<div class="empty-state">' +
-        '<div class="empty-title">No price drops right now</div>' +
-        '<div class="empty-hint">Check back soon. Price drops and new listings appear here as users scan matches.</div>' +
-      '</div>';
-    return;
-  }
-
-  let html = '';
-  for (const key of sortedKeys) {
-    const g = groups[key];
-    const info = g.info;
-    // Sort: reduced first (by drop_raw desc), then new
-    g.seats.sort((a, b) => {
-      if (a.drop_type !== b.drop_type) return a.drop_type === 'reduced' ? -1 : 1;
-      return (b.drop_raw || 0) - (a.drop_raw || 0);
-    });
-
-    html += '<div class="match-group">';
-    html += '<div class="match-header">';
-    html += '<div class="match-teams">' + esc(info.matchup || 'TBD') + '</div>';
-    html += '<div class="match-meta">';
-    if (info.city) html += '<span>' + esc(info.city) + '</span><span class="sep">|</span>';
-    if (info.match_date) html += '<span>' + formatDate(info.match_date) + '</span><span class="sep">|</span>';
-    html += '<span>Match ' + (info.match_number || '?') + '</span>';
-    html += '</div></div>';
-
-    for (const seat of g.seats) {
-      html += '<div class="seat-row">';
-      html += '<div class="seat-info">';
-      const loc = [seat.block, seat.row_label ? 'Row ' + seat.row_label : '', seat.seat_number ? 'Seat ' + seat.seat_number : ''].filter(Boolean).join(', ');
-      html += '<div class="seat-location">' + esc(loc || 'Unknown') + '</div>';
-      html += '<div class="seat-category">' + esc(seat.category || '') + '</div>';
-      html += '</div>';
-
-      if (seat.drop_type === 'reduced') {
-        html += '<div class="seat-prices">';
-        html += '<div class="price-current">' + fmtPrice(seat.current_price, seat.site) + '</div>';
-        html += '<div class="price-high">' + fmtPrice(seat.high_price, seat.site) + '</div>';
-        html += '</div>';
-        html += '<div class="seat-drop">';
-        html += '<div class="drop-amount">-' + fmtPrice(seat.drop_raw, seat.site).replace('$', '$') + '</div>';
-        html += '<div class="drop-pct">' + fmtPct(seat.drop_raw, seat.high_price) + '</div>';
-        html += '</div>';
-      } else {
-        html += '<div class="seat-prices">';
-        html += '<div class="price-current">' + fmtPrice(seat.current_price, seat.site) + '</div>';
-        html += '<span class="badge-type badge-new">New</span>';
-        html += '</div>';
-        html += '<div class="seat-drop"></div>';
-      }
-
-      html += '</div>';
-    }
-    html += '</div>';
-  }
-  matchList.innerHTML = html;
-}
-
-function esc(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
-function formatDate(d) {
-  try {
-    return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  } catch { return d; }
-}
-
-// --- Event listeners ---
-unlockBtn.addEventListener('click', () => {
-  clearError();
+// Login
+$('unlockBtn').addEventListener('click', () => {
+  loginError.style.display = 'none';
+  keyInput.classList.remove('error');
   const key = keyInput.value.trim();
-  if (!key) { showError('Please enter a license key'); return; }
+  if (!key) { loginError.textContent = 'Please enter a license key'; loginError.style.display = ''; return; }
   localStorage.setItem(LS_KEY, key);
   fetchDrops(key);
 });
+keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') $('unlockBtn').click(); });
 
-keyInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') unlockBtn.click();
-});
-
-refreshBtn.addEventListener('click', () => {
+// Refresh
+$('refreshBtn').addEventListener('click', () => {
   const key = localStorage.getItem(LS_KEY);
   if (!key) return;
-  refreshBtn.classList.add('spinning');
-  fetchDrops(key).finally(() => refreshBtn.classList.remove('spinning'));
+  $('refreshBtn').classList.add('spinning');
+  fetchDrops(key).finally(() => $('refreshBtn').classList.remove('spinning'));
 });
 
-logoutBtn.addEventListener('click', () => {
+// Logout
+$('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem(LS_KEY);
-  hide(dataView);
-  hide(headerActions);
+  mainView.style.display = 'none';
+  headerActions.style.display = 'none';
   errorBanner.style.display = 'none';
-  show(loginView);
+  loginView.style.display = '';
   keyInput.value = '';
 });
 
-// --- Init ---
+// Category pills
+$('catPills').addEventListener('click', e => {
+  const pill = e.target.closest('.cat-pill');
+  if (!pill) return;
+  const cat = pill.dataset.cat;
+  if (S.filters.categories.has(cat)) S.filters.categories.delete(cat);
+  else S.filters.categories.add(cat);
+  if (S.filters.categories.size === 0) S.filters.categories = new Set(DEFAULT_CATS);
+  pill.classList.toggle('active', S.filters.categories.has(cat));
+  saveFilters();
+  applyFilters();
+  // Update pill active states
+  $('catPills').querySelectorAll('.cat-pill').forEach(p => p.classList.toggle('active', S.filters.categories.has(p.dataset.cat)));
+});
+
+// Multi-select dropdowns (game, city)
+function bindMf(wrapId, ddId, btnId, filterKey, allLabel) {
+  const btn = $(btnId), dd = $(ddId);
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    document.querySelectorAll('.mf-dropdown.open').forEach(d => { if (d !== dd) d.classList.remove('open'); });
+    dd.classList.toggle('open');
+  });
+  dd.addEventListener('click', e => e.stopPropagation());
+  dd.addEventListener('change', e => {
+    const val = e.target.type === 'checkbox' ? (isNaN(e.target.value) ? e.target.value : Number(e.target.value)) : e.target.value;
+    if (e.target.checked) S.filters[filterKey].add(val);
+    else S.filters[filterKey].delete(val);
+    const total = dd.querySelectorAll('input').length;
+    updateMfLabel(btnId, S.filters[filterKey], total, allLabel);
+    saveFilters();
+    applyFilters();
+  });
+}
+bindMf('gameWrap', 'gameDd', 'gameBtn', 'games', 'All games');
+bindMf('cityWrap', 'cityDd', 'cityBtn', 'cities', 'All cities');
+
+// Sort dropdown
+const sortBtn = $('sortBtn'), sortDd = $('sortDd');
+sortBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  document.querySelectorAll('.mf-dropdown.open').forEach(d => { if (d !== sortDd) d.classList.remove('open'); });
+  sortDd.classList.toggle('open');
+});
+sortDd.addEventListener('click', e => e.stopPropagation());
+sortDd.addEventListener('change', e => {
+  S.sort = e.target.value;
+  const labels = { drop: 'Biggest drop', price: 'Cheapest', new: 'Newest first', match: 'Match #' };
+  sortBtn.textContent = labels[S.sort];
+  sortDd.classList.remove('open');
+  saveFilters();
+  applyFilters();
+});
+
+// Close dropdowns on outside click
+document.addEventListener('click', () => {
+  document.querySelectorAll('.mf-dropdown.open').forEach(d => d.classList.remove('open'));
+});
+
+// Collapsible match groups (delegated)
+matchList.addEventListener('click', e => {
+  const hdr = e.target.closest('.match-hdr');
+  if (!hdr) return;
+  const key = hdr.dataset.key;
+  const numKey = isNaN(key) ? key : Number(key);
+  const body = hdr.nextElementSibling;
+  const chev = hdr.querySelector('.chevron');
+  if (S.collapsed.has(numKey)) {
+    S.collapsed.delete(numKey);
+    body.style.display = '';
+    chev.classList.add('open');
+  } else {
+    S.collapsed.add(numKey);
+    body.style.display = 'none';
+    chev.classList.remove('open');
+  }
+});
+
+// Sticky filter bar shadow
+const sentinel = document.createElement('div');
+filterBar.parentNode.insertBefore(sentinel, filterBar);
+const obs = new IntersectionObserver(([entry]) => {
+  filterBar.classList.toggle('stuck', !entry.isIntersecting);
+}, { threshold: 0 });
+obs.observe(sentinel);
+
+// ---- Init ----
+loadFilters();
 const savedKey = localStorage.getItem(LS_KEY);
 if (savedKey) {
   fetchDrops(savedKey);
 } else {
-  show(loginView);
+  loginView.style.display = '';
 }
 </script>
 </body>
