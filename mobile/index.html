@@ -7,674 +7,511 @@
   <title>Price Drops — FIFA Ticket Scout</title>
   <style>
     :root {
-      --white: #ffffff;
-      --gray-50: #f8f9fa;
-      --gray-100: #f1f3f5;
-      --gray-200: #e9ecef;
-      --gray-300: #dee2e6;
-      --gray-400: #ced4da;
-      --gray-500: #adb5bd;
-      --gray-600: #868e96;
-      --gray-700: #495057;
-      --gray-800: #343a40;
-      --gray-900: #212529;
-      --fifa-purple: #1a3d8f;
-      --fifa-purple-light: #2550b0;
-      --fifa-purple-dim: rgba(26, 61, 143, 0.08);
-      --accent: #d4213d;
-      --green: #1a9e4a;
-      --green-dim: rgba(26, 158, 74, 0.1);
-      --danger: #d44040;
-      --danger-dim: rgba(212, 64, 64, 0.08);
-      --border: #e9ecef;
-      --border-dark: #dee2e6;
-      --radius: 8px;
-      --radius-sm: 5px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-      --shadow: 0 2px 8px rgba(0,0,0,0.08);
-      --mono: ui-monospace, "SF Mono", Menlo, "Courier New", monospace;
+      --white:#fff;--gray-50:#f8f9fa;--gray-100:#f1f3f5;--gray-200:#e9ecef;--gray-300:#dee2e6;
+      --gray-400:#ced4da;--gray-500:#adb5bd;--gray-600:#868e96;--gray-700:#495057;--gray-800:#343a40;--gray-900:#212529;
+      --fifa-purple:#1a3d8f;--fifa-purple-light:#2550b0;--fifa-purple-dim:rgba(26,61,143,0.08);
+      --accent:#d4213d;--green:#1a9e4a;--green-dim:rgba(26,158,74,0.1);
+      --danger:#d44040;--danger-dim:rgba(212,64,64,0.08);
+      --border:#e9ecef;--border-dark:#dee2e6;--radius:8px;--radius-sm:5px;
+      --shadow:0 2px 8px rgba(0,0,0,0.08);
+      --mono:ui-monospace,"SF Mono",Menlo,"Courier New",monospace;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      font-size: 14px; line-height: 1.4;
-      background: var(--gray-100); color: var(--gray-800);
-      -webkit-font-smoothing: antialiased;
-    }
-    .container { max-width: 540px; margin: 0 auto; background: var(--white); min-height: 100vh; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:14px;line-height:1.4;background:var(--gray-50);color:var(--gray-800);-webkit-font-smoothing:antialiased}
 
-    /* ---- Header ---- */
-    .header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); background: var(--white); }
-    .header-top { display: flex; align-items: center; justify-content: space-between; }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-logo { width: 28px; height: 28px; border-radius: 6px; }
-    .brand h1 { font-size: 15px; font-weight: 700; color: var(--gray-900); letter-spacing: 0.2px; }
-    .header-sub { font-size: 11px; color: var(--gray-500); margin-top: 3px; line-height: 1.4; }
-    .header-actions { display: flex; align-items: center; gap: 6px; }
-    .btn-icon { background: none; border: none; color: var(--gray-400); padding: 6px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; transition: all 0.15s; }
-    .btn-icon:hover, .btn-icon:active { color: var(--fifa-purple); background: var(--fifa-purple-dim); }
-    .btn-icon.spinning svg { animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .btn-logout { font-size: 11px; font-weight: 600; color: var(--gray-500); background: none; border: none; cursor: pointer; }
+    .header{padding:12px 16px 8px;border-bottom:1px solid var(--border);background:var(--white);position:sticky;top:0;z-index:110}
+    .header-top{display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:8px}
+    .brand-logo{width:26px;height:26px;border-radius:6px}
+    .brand h1{font-size:15px;font-weight:700;color:var(--gray-900)}
+    .header-right{display:flex;align-items:center;gap:8px}
+    .header-updated{font-size:10px;color:var(--gray-400)}
+    .btn-icon{background:none;border:none;color:var(--gray-400);padding:5px;border-radius:6px;cursor:pointer;display:flex;align-items:center;transition:all .15s}
+    .btn-icon:hover{color:var(--fifa-purple);background:var(--fifa-purple-dim)}
+    .btn-icon.spinning svg{animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .btn-text{font-size:11px;font-weight:600;color:var(--gray-500);background:none;border:none;cursor:pointer}
 
-    /* ---- Sticky Filter Bar ---- */
-    .filter-bar { background: var(--white); border-bottom: 1px solid var(--border); padding: 10px 16px 8px; position: sticky; top: 0; z-index: 100; transition: box-shadow 0.15s; }
-    .filter-bar.stuck { box-shadow: var(--shadow); }
-    .filter-row { margin-bottom: 8px; }
-    .filter-row:last-child { margin-bottom: 0; }
+    .filter-bar{background:var(--white);border-bottom:1px solid var(--border);padding:8px 16px 6px;position:sticky;top:48px;z-index:100;transition:box-shadow .15s}
+    .filter-bar.stuck{box-shadow:var(--shadow)}
+    .filter-row{margin-bottom:6px}.filter-row:last-child{margin-bottom:0}
+    .pills{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:1px}
+    .pills::-webkit-scrollbar{display:none}
+    .pill{background:var(--white);border:1px solid var(--border-dark);border-radius:14px;padding:4px 9px;font-size:10px;font-weight:600;color:var(--gray-600);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;font-family:inherit}
+    .pill:hover:not(.active){border-color:var(--fifa-purple);color:var(--fifa-purple)}
+    .pill.active{background:var(--fifa-purple);border-color:var(--fifa-purple);color:#fff}
+    .pill .cnt{font-weight:400;opacity:.7;margin-left:1px}
+    .filter-selects{display:flex;gap:6px}
+    .mf-wrap{position:relative;flex:1}
+    .mf-btn{width:100%;font-size:11px;padding:5px 8px;border:1px solid var(--border-dark);border-radius:var(--radius);background:var(--white);color:var(--gray-700);cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:inherit}
+    .mf-btn:hover{border-color:var(--gray-500)}
+    .mf-btn.mf-active{border-color:var(--fifa-purple);color:var(--fifa-purple);font-weight:600}
+    .mf-dropdown{display:none;position:absolute;top:calc(100% + 2px);left:0;min-width:100%;max-width:280px;max-height:50vh;overflow-y:auto;background:var(--white);border:1px solid var(--border-dark);border-radius:var(--radius);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:200;padding:4px 0}
+    .mf-dropdown.open{display:block}
+    .mf-item{display:flex;align-items:center;gap:6px;padding:7px 10px;font-size:11px;color:var(--gray-800);cursor:pointer;white-space:nowrap}
+    .mf-item:hover{background:var(--gray-50)}
+    .mf-item input{margin:0;accent-color:var(--fifa-purple)}
 
-    /* Category pills */
-    .cat-pills { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
-    .cat-pills::-webkit-scrollbar { display: none; }
-    .cat-pill { background: var(--white); border: 1px solid var(--border-dark); border-radius: 14px; padding: 5px 10px; font-size: 11px; font-weight: 600; color: var(--gray-600); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; font-family: inherit; }
-    .cat-pill:hover:not(.active) { border-color: var(--fifa-purple); color: var(--fifa-purple); }
-    .cat-pill.active { background: var(--fifa-purple); border-color: var(--fifa-purple); color: #fff; }
-    .cat-pill .pill-count { font-weight: 400; opacity: 0.7; margin-left: 2px; }
+    .stats-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+    .stat{text-align:center;padding:8px 6px;background:var(--white)}
+    .stat-value{font-size:16px;font-weight:800;color:var(--fifa-purple);font-variant-numeric:tabular-nums}
+    .stat-label{font-size:9px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.6px;margin-top:1px}
+    .transparency{padding:5px 16px;font-size:10px;color:var(--gray-500);background:var(--gray-50);border-bottom:1px solid var(--border);text-align:center}
 
-    /* Multi-select dropdowns */
-    .filter-selects { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-    .mf-wrap { position: relative; }
-    .mf-btn { width: 100%; font-size: 11px; padding: 6px 8px; border: 1px solid var(--border-dark); border-radius: var(--radius); background: var(--white); color: var(--gray-700); cursor: pointer; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: inherit; }
-    .mf-btn:hover { border-color: var(--gray-500); }
-    .mf-btn.mf-active { border-color: var(--fifa-purple); color: var(--fifa-purple); font-weight: 600; }
-    .mf-dropdown { display: none; position: absolute; top: calc(100% + 2px); left: 0; min-width: 100%; max-height: 50vh; overflow-y: auto; background: var(--white); border: 1px solid var(--border-dark); border-radius: var(--radius); box-shadow: 0 4px 12px rgba(0,0,0,0.12); z-index: 200; padding: 4px 0; }
-    .mf-dropdown.open { display: block; }
-    .mf-item { display: flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: 12px; color: var(--gray-800); cursor: pointer; white-space: nowrap; }
-    .mf-item:hover { background: var(--gray-50); }
-    .mf-item input { margin: 0; accent-color: var(--fifa-purple); }
+    .login-card{max-width:320px;margin:50px auto;padding:32px 24px;text-align:center;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .login-card img{margin-bottom:12px}
+    .login-title{font-size:15px;font-weight:700;color:var(--gray-900);margin-bottom:4px}
+    .login-hint{font-size:12px;color:var(--gray-500);margin-bottom:16px;line-height:1.5}
+    .login-input{width:100%;padding:9px 10px;border:1px solid var(--border-dark);border-radius:var(--radius);font-size:12px;font-family:inherit;color:var(--gray-800);outline:none}
+    .login-input:focus{border-color:var(--fifa-purple)}
+    .login-input.error{border-color:var(--danger)}
+    .login-btn{width:100%;margin-top:8px;padding:9px;background:var(--fifa-purple);color:#fff;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+    .login-error{margin-top:8px;font-size:11px;color:var(--danger);display:none}
+    .login-footer{margin-top:14px;font-size:11px;color:var(--gray-500)}.login-footer a{color:var(--fifa-purple);text-decoration:none;font-weight:600}
 
-    /* ---- Stats Bar ---- */
-    .stats-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
-    .stat { text-align: center; padding: 10px 8px; background: var(--white); }
-    .stat-value { font-size: 18px; font-weight: 800; color: var(--fifa-purple); letter-spacing: -0.3px; font-variant-numeric: tabular-nums; }
-    .stat-label { font-size: 9px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+    .loading{padding:40px 16px;text-align:center}
+    .spinner{display:inline-block;width:24px;height:24px;border:3px solid var(--gray-200);border-top-color:var(--fifa-purple);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:10px}
+    .loading-text{font-size:13px;font-weight:600;color:var(--gray-700)}.loading-hint{font-size:11px;color:var(--gray-500);margin-top:3px}
 
-    /* ---- Transparency ---- */
-    .transparency { padding: 6px 16px; font-size: 10px; color: var(--gray-500); background: var(--gray-50); border-bottom: 1px solid var(--border); text-align: center; }
+    .empty-state{padding:36px 20px;text-align:center}
+    .empty-title{font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:5px}
+    .empty-hint{font-size:11px;color:var(--gray-500);line-height:1.5;max-width:260px;margin:0 auto}
 
-    /* ---- Login Card ---- */
-    .login-card { max-width: 340px; margin: 60px auto; padding: 36px 28px; text-align: center; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); }
-    .login-card img { margin-bottom: 14px; }
-    .login-title { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
-    .login-hint { font-size: 12px; color: var(--gray-500); margin-bottom: 18px; line-height: 1.5; }
-    .login-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-dark); border-radius: var(--radius); font-size: 13px; font-family: inherit; color: var(--gray-800); outline: none; transition: border-color 0.15s; }
-    .login-input:focus { border-color: var(--fifa-purple); }
-    .login-input.error { border-color: var(--danger); }
-    .login-btn { width: 100%; margin-top: 10px; padding: 10px; background: var(--fifa-purple); color: #fff; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
-    .login-btn:hover { background: var(--fifa-purple-light); }
-    .login-error { margin-top: 10px; font-size: 12px; color: var(--danger); display: none; }
-    .login-footer { margin-top: 18px; font-size: 12px; color: var(--gray-500); }
-    .login-footer a { color: var(--fifa-purple); text-decoration: none; font-weight: 600; }
+    .ticket-row{padding:10px 16px;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:background .1s;background:var(--white)}
+    .ticket-row:active{background:var(--gray-50)}
+    .ticket-compact{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .t-match{font-size:11px;font-weight:700;color:var(--gray-700);white-space:nowrap}
+    .t-cat{font-size:9px;font-weight:600;color:var(--gray-500);background:var(--gray-100);padding:1px 5px;border-radius:4px;white-space:nowrap}
+    .t-block{font-size:11px;color:var(--gray-500);white-space:nowrap}
+    .t-seats{font-size:10px;color:var(--gray-400);white-space:nowrap}
+    .t-spacer{flex:1}
+    .t-price{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--gray-900);font-variant-numeric:tabular-nums;white-space:nowrap}
+    .t-drop{font-size:10px;font-weight:600;color:var(--green);white-space:nowrap;margin-left:4px}
+    .t-new-badge{font-size:8px;font-weight:700;padding:2px 5px;border-radius:4px;background:var(--fifa-purple-dim);color:var(--fifa-purple);letter-spacing:.4px;white-space:nowrap}
+    .t-face{font-size:9px;color:var(--gray-400);white-space:nowrap;margin-left:4px}
+    .t-ago{font-size:9px;color:var(--gray-400);white-space:nowrap}
 
-    /* ---- Loading ---- */
-    .loading { padding: 48px 16px; text-align: center; }
-    .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--gray-200); border-top-color: var(--fifa-purple); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 12px; }
-    .loading-text { font-size: 13px; font-weight: 600; color: var(--gray-700); }
-    .loading-hint { font-size: 11px; color: var(--gray-500); margin-top: 4px; }
+    .ticket-detail{display:none;padding:10px 16px 14px;background:var(--gray-50);border-bottom:1px solid var(--border);font-size:12px;color:var(--gray-700);line-height:1.6}
+    .ticket-detail.open{display:block}
+    .td-teams{font-size:16px;font-weight:800;color:var(--gray-900);margin-bottom:2px}
+    .td-meta{font-size:11px;color:var(--gray-500);margin-bottom:8px}
+    .td-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+    .td-label{font-size:10px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px}
+    .td-val{font-size:12px;color:var(--gray-800);font-weight:600}
+    .td-val.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+    .td-val.green{color:var(--green)}
+    .td-val.accent{color:var(--accent)}
 
-    /* ---- Empty State ---- */
-    .empty-state { padding: 40px 24px; text-align: center; }
-    .empty-title { font-size: 15px; font-weight: 700; color: var(--gray-800); margin-bottom: 6px; }
-    .empty-hint { font-size: 12px; color: var(--gray-500); line-height: 1.5; max-width: 260px; margin: 0 auto; }
+    .load-more{display:block;width:100%;padding:12px;background:var(--white);border:none;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fifa-purple);cursor:pointer;font-family:inherit}
+    .load-more:hover{background:var(--gray-50)}
 
-    /* ---- Match Groups ---- */
-    .match-group { border-bottom: 1px solid var(--border); }
-    .match-hdr { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: var(--white); transition: background 0.1s; user-select: none; }
-    .match-hdr:active { background: var(--gray-50); }
-    .match-info { flex: 1; min-width: 0; }
-    .match-teams { font-size: 14px; font-weight: 700; color: var(--gray-900); }
-    .match-meta { display: flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--gray-500); margin-top: 2px; flex-wrap: wrap; }
-    .match-meta .sep { color: var(--gray-300); }
-    .match-summary { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-    .summary-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; }
-    .summary-badge.drop { background: var(--green-dim); color: var(--green); }
-    .summary-badge.new { background: var(--fifa-purple-dim); color: var(--fifa-purple); }
-    .chevron { width: 14px; height: 14px; transition: transform 0.2s; color: var(--gray-400); flex-shrink: 0; margin-left: 4px; }
-    .chevron.open { transform: rotate(180deg); }
-    .match-body { overflow: hidden; }
-
-    /* ---- Seat Rows ---- */
-    .seat-row { display: flex; align-items: center; padding: 9px 16px; border-top: 1px solid var(--gray-100); gap: 8px; }
-    .seat-loc { flex: 1; min-width: 0; }
-    .seat-block { font-size: 12px; font-weight: 600; color: var(--gray-800); }
-    .seat-detail { font-size: 10px; color: var(--gray-500); margin-top: 1px; }
-    .seat-cat { display: inline-block; font-size: 9px; font-weight: 600; color: var(--gray-500); background: var(--gray-100); padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
-    .seat-prices { display: flex; align-items: baseline; gap: 4px; flex-shrink: 0; }
-    .price-old { font-family: var(--mono); font-size: 11px; color: var(--gray-400); text-decoration: line-through; font-variant-numeric: tabular-nums; }
-    .price-arrow { color: var(--gray-300); font-size: 10px; }
-    .price-now { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--gray-900); font-variant-numeric: tabular-nums; }
-    .seat-drop { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; min-width: 50px; }
-    .drop-amt { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
-    .drop-pct { font-size: 9px; font-weight: 600; color: var(--green); }
-    .drop-was { font-size: 10px; color: var(--green); font-weight: 600; white-space: nowrap; }
-    .badge-new { font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--fifa-purple-dim); color: var(--fifa-purple); letter-spacing: 0.5px; }
-
-    /* ---- Error ---- */
-    .error-banner { padding: 10px 16px; background: var(--danger-dim); color: var(--danger); font-size: 12px; font-weight: 600; text-align: center; display: none; border-bottom: 1px solid rgba(212,64,64,0.15); }
-
-    /* ---- Footer ---- */
-    .footer { padding: 20px 16px; text-align: center; font-size: 10px; color: var(--gray-400); border-top: 1px solid var(--border); }
-    .footer a { color: var(--gray-500); text-decoration: none; }
-
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .footer{padding:16px;text-align:center;font-size:10px;color:var(--gray-400);background:var(--white);border-top:1px solid var(--border)}
+    .footer a{color:var(--gray-500);text-decoration:none}
   </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="header-top">
-      <div class="brand">
-        <img class="brand-logo" src="../fifa-ticket-scout/icon128.png" alt="">
-        <h1>Price Drops</h1>
-      </div>
-      <div class="header-actions" id="headerActions" style="display:none;">
-        <button class="btn-icon" id="refreshBtn" title="Refresh">
-          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17"/><path d="M14.5 8a6.5 6.5 0 0 1-11.48 4.17"/><polyline points="13 1 13 4.5 9.5 4.5"/><polyline points="3 15 3 11.5 6.5 11.5"/></svg>
-        </button>
-        <button class="btn-logout" id="logoutBtn">Log out</button>
-      </div>
+<div class="header">
+  <div class="header-top">
+    <div class="brand"><img class="brand-logo" src="../fifa-ticket-scout/icon128.png" alt=""><h1>Price Drops</h1></div>
+    <div class="header-right" id="headerRight" style="display:none">
+      <span class="header-updated" id="updatedAgo"></span>
+      <button class="btn-icon" id="refreshBtn" title="Refresh"><svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17"/><path d="M14.5 8a6.5 6.5 0 0 1-11.48 4.17"/><polyline points="13 1 13 4.5 9.5 4.5"/><polyline points="3 15 3 11.5 6.5 11.5"/></svg></button>
+      <button class="btn-text" id="logoutBtn">Log out</button>
     </div>
-    <div class="header-sub">Real-time price drops &amp; new listings for FIFA World Cup 2026 resale tickets.</div>
-  </div>
-
-  <!-- Error banner -->
-  <div class="error-banner" id="errorBanner"></div>
-
-  <!-- Login -->
-  <div id="loginView">
-    <div class="login-card">
-      <img src="../fifa-ticket-scout/icon128.png" width="48" height="48" alt="">
-      <div class="login-title">FIFA Ticket Scout</div>
-      <div class="login-hint">Enter your Pro license key to view live price drops and new listings.</div>
-      <input class="login-input" id="keyInput" type="text" placeholder="Paste your license key" autocomplete="off">
-      <button class="login-btn" id="unlockBtn">Unlock</button>
-      <div class="login-error" id="loginError"></div>
-      <div class="login-footer">Don't have a license? <a href="https://fifaticketscout.com/#pricing">View plans</a></div>
-    </div>
-  </div>
-
-  <!-- Loading -->
-  <div id="loadingView" style="display:none;">
-    <div class="loading">
-      <div class="spinner"></div>
-      <div class="loading-text">Scanning for price drops...</div>
-      <div class="loading-hint">Checking all matches for reduced and new listings</div>
-    </div>
-  </div>
-
-  <!-- Main content (hidden until auth) -->
-  <div id="mainView" style="display:none;">
-
-    <!-- Filter bar -->
-    <div class="filter-bar" id="filterBar">
-      <div class="filter-row">
-        <div class="cat-pills" id="catPills"></div>
-      </div>
-      <div class="filter-row">
-        <div class="filter-selects">
-          <div class="mf-wrap" id="gameWrap">
-            <button class="mf-btn" id="gameBtn">All games</button>
-            <div class="mf-dropdown" id="gameDd"></div>
-          </div>
-          <div class="mf-wrap" id="cityWrap">
-            <button class="mf-btn" id="cityBtn">All cities</button>
-            <div class="mf-dropdown" id="cityDd"></div>
-          </div>
-          <div class="mf-wrap" id="sortWrap">
-            <button class="mf-btn" id="sortBtn">Biggest drop</button>
-            <div class="mf-dropdown" id="sortDd">
-              <label class="mf-item"><input type="radio" name="sort" value="drop" checked> Biggest drop</label>
-              <label class="mf-item"><input type="radio" name="sort" value="price"> Cheapest</label>
-              <label class="mf-item"><input type="radio" name="sort" value="new"> Newest first</label>
-              <label class="mf-item"><input type="radio" name="sort" value="match"> Match #</label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-bar" id="statsBar">
-      <div class="stat"><div class="stat-value" id="statDrops">--</div><div class="stat-label">Price Drops</div></div>
-      <div class="stat"><div class="stat-value" id="statNew">--</div><div class="stat-label">New Listings</div></div>
-      <div class="stat"><div class="stat-value" id="statMatches">--</div><div class="stat-label">Matches</div></div>
-    </div>
-
-    <!-- Transparency -->
-    <div class="transparency">Resale prices include 15% FIFA fee</div>
-
-    <!-- Match list -->
-    <div id="matchList"></div>
-
-    <!-- Empty state -->
-    <div id="emptyState" style="display:none;">
-      <div class="empty-state">
-        <div class="empty-title">No price drops right now</div>
-        <div class="empty-hint">When sellers reduce their prices or new tickets are listed, they'll appear here.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">
-    Built by <a href="https://buymeacoffee.com/davidrd" target="_blank">David</a> &middot;
-    <a href="https://fifaticketscout.com" target="_blank">fifaticketscout.com</a>
   </div>
 </div>
 
+<div id="loginView">
+  <div class="login-card">
+    <img src="../fifa-ticket-scout/icon128.png" width="44" height="44" alt="">
+    <div class="login-title">FIFA Ticket Scout</div>
+    <div class="login-hint">Enter your Pro license key to view live price drops and new listings.</div>
+    <input class="login-input" id="keyInput" type="text" placeholder="Paste your license key" autocomplete="off">
+    <button class="login-btn" id="unlockBtn">Unlock</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-footer">No license? <a href="https://fifaticketscout.com/#pricing">View plans</a></div>
+  </div>
+</div>
+
+<div id="loadingView" style="display:none"><div class="loading"><div class="spinner"></div><div class="loading-text">Scanning for price drops...</div><div class="loading-hint">Checking all matches for reduced and new listings</div></div></div>
+
+<div id="mainView" style="display:none">
+  <div class="filter-bar" id="filterBar">
+    <div class="filter-row"><div class="pills" id="catPills"></div></div>
+    <div class="filter-row"><div class="pills" id="sitePills"></div></div>
+    <div class="filter-row">
+      <div class="filter-selects">
+        <div class="mf-wrap"><button class="mf-btn" id="gameBtn">All games</button><div class="mf-dropdown" id="gameDd"></div></div>
+        <div class="mf-wrap"><button class="mf-btn" id="cityBtn">All cities</button><div class="mf-dropdown" id="cityDd"></div></div>
+        <div class="mf-wrap"><button class="mf-btn" id="sortBtn">Drop %</button><div class="mf-dropdown" id="sortDd">
+          <label class="mf-item"><input type="radio" name="sort" value="dropPct" checked> Biggest Drop %</label>
+          <label class="mf-item"><input type="radio" name="sort" value="dropAmt"> Biggest Drop $</label>
+          <label class="mf-item"><input type="radio" name="sort" value="cheap"> Cheapest</label>
+          <label class="mf-item"><input type="radio" name="sort" value="new"> Newest</label>
+          <label class="mf-item"><input type="radio" name="sort" value="fvPct"> vs Face Value %</label>
+          <label class="mf-item"><input type="radio" name="sort" value="fvAmt"> vs Face Value $</label>
+        </div></div>
+      </div>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-value" id="statDrops">--</div><div class="stat-label">Drops</div></div>
+    <div class="stat"><div class="stat-value" id="statNew">--</div><div class="stat-label">New</div></div>
+    <div class="stat"><div class="stat-value" id="statTotal">--</div><div class="stat-label">Clusters</div></div>
+  </div>
+  <div class="transparency">Resale prices include 15% FIFA fee</div>
+  <div id="ticketList"></div>
+  <div id="emptyState" style="display:none"><div class="empty-state"><div class="empty-title">No results</div><div class="empty-hint">Adjust your filters or check back soon.</div></div></div>
+</div>
+
+<div class="footer">Built by <a href="https://buymeacoffee.com/davidrd" target="_blank">David</a> &middot; <a href="https://fifaticketscout.com" target="_blank">fifaticketscout.com</a></div>
+
 <script>
-const EDGE_URL = 'https://yaydpahqlqwesqdddgfi.supabase.co/functions/v1/get-price-drops';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlheWRwYWhxbHF3ZXNxZGRkZ2ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MDg1NDEsImV4cCI6MjA5MTQ4NDU0MX0.QQJuKz9Fnb_schlS6FEioMtyRvrJVBwAL71dzitZU-g';
-const LS_KEY = 'fts_license_key';
-const LS_FILTERS = 'fts_mobile_filters';
-const DEFAULT_CATS = ['Cat 1', 'Cat 2', 'Cat 3'];
+const EDGE_URL='https://yaydpahqlqwesqdddgfi.supabase.co/functions/v1/get-price-drops';
+const ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlheWRwYWhxbHF3ZXNxZGRkZ2ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MDg1NDEsImV4cCI6MjA5MTQ4NDU0MX0.QQJuKz9Fnb_schlS6FEioMtyRvrJVBwAL71dzitZU-g';
+const LS_KEY='fts_license_key',LS_FILT='fts_m_filters';
+const DEFAULT_CATS=new Set(['Cat 1','Cat 2','Cat 3','Cat 4']);
+const DEFAULT_SITES=new Set(['resale','lms']);
+const PAGE_SIZE=100;
+const $=id=>document.getElementById(id);
 
-// ---- State ----
-const S = {
-  raw: [],
-  filtered: [],
-  filters: { categories: new Set(DEFAULT_CATS), games: new Set(), cities: new Set() },
-  sort: 'drop',
-  collapsed: new Set(),
-};
+// State
+let raw=[],clusters=[],filtered=[];
+let filters={categories:new Set(DEFAULT_CATS),sites:new Set(DEFAULT_SITES),games:new Set(),cities:new Set()};
+let sort='dropPct',page=1,lastFetchAt=null,timerInterval=null;
 
-// ---- DOM refs ----
-const $ = id => document.getElementById(id);
-const loginView = $('loginView'), loadingView = $('loadingView'), mainView = $('mainView');
-const headerActions = $('headerActions'), keyInput = $('keyInput'), loginError = $('loginError');
-const errorBanner = $('errorBanner'), matchList = $('matchList'), emptyState = $('emptyState');
-const filterBar = $('filterBar');
-
-// ---- Category normalization (mirrors heal_category_xref SQL) ----
-function normCat(raw) {
-  if (!raw) return 'Other';
-  if (/wheelchair|rollstuhl|fauteuil|accès facile|accesibilidad|barrierefrei|accompagnant|acompañante|utilisateur.*fauteuil|persona.*silla/i.test(raw)) return 'Accessible';
-  if (/supporter|tribune|grada.*aficionados|secci/i.test(raw)) return 'Supporter';
-  if (/^Fan /i.test(raw)) return 'Supporter';
-  if (/alcohol|alcool|alkohol/i.test(raw)) return 'Other';
-  if (/1$/.test(raw)) return 'Cat 1';
-  if (/2$/.test(raw)) return 'Cat 2';
-  if (/3$/.test(raw)) return 'Cat 3';
-  if (/4$/.test(raw)) return 'Cat 4';
-  return 'Other';
+// Category normalization
+function normCat(r){
+  if(!r)return'Other';
+  if(/wheelchair|rollstuhl|fauteuil|accès facile|accesibilidad|barrierefrei|accompagnant|acompañante|utilisateur.*fauteuil|persona.*silla/i.test(r))return'Accessible';
+  if(/supporter|tribune|grada.*aficionados|secci/i.test(r))return'Supporter';
+  if(/^Fan /i.test(r))return'Supporter';
+  if(/alcohol|alcool|alkohol/i.test(r))return'Other';
+  if(/1$/.test(r))return'Cat 1';if(/2$/.test(r))return'Cat 2';if(/3$/.test(r))return'Cat 3';if(/4$/.test(r))return'Cat 4';
+  return'Other';
 }
 
-// ---- Price helpers ----
-function dispPrice(mc, site) {
-  if (mc == null) return null;
-  return site === 'lms' ? mc / 1000 : mc / 1000 * 1.15;
+// Price helpers
+function dp(mc,site){return mc==null?null:site==='lms'?mc/1000:mc/1000*1.15}
+function fmt(n){return n==null?'—':'$'+Math.round(n).toLocaleString('en-US')}
+function ago(ts){
+  if(!ts)return'';
+  const m=Math.round((Date.now()-new Date(ts).getTime())/60000);
+  if(m<1)return'just now';if(m<60)return m+'m ago';
+  const h=Math.round(m/60);if(h<24)return h+'h ago';return Math.round(h/24)+'d ago';
 }
-function fmtUSD(n) {
-  if (n == null) return '—';
-  return '$' + Math.round(n).toLocaleString('en-US');
-}
-function fmtPct(dropRaw, highPrice) {
-  if (!dropRaw || !highPrice) return '';
-  return '-' + Math.round((dropRaw / highPrice) * 100) + '%';
-}
-function fmtDate(d) {
-  if (!d) return '';
-  try { return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); } catch { return d; }
-}
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function fmtDate(d){try{return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}catch{return d||''}}
 
-// ---- Filter persistence ----
-function saveFilters() {
-  localStorage.setItem(LS_FILTERS, JSON.stringify({
-    categories: [...S.filters.categories],
-    games: [...S.filters.games],
-    cities: [...S.filters.cities],
-    sort: S.sort,
-  }));
-}
-function loadFilters() {
-  try {
-    const f = JSON.parse(localStorage.getItem(LS_FILTERS));
-    if (f) {
-      if (f.categories?.length) S.filters.categories = new Set(f.categories);
-      if (f.games?.length) S.filters.games = new Set(f.games);
-      if (f.cities?.length) S.filters.cities = new Set(f.cities);
-      if (f.sort) S.sort = f.sort;
+// Seat clustering (mirrors extension popup.js:734-796)
+function buildClusters(rows){
+  const cls=[],used=new Set();
+  const gmap=new Map();
+  for(const r of rows){
+    // Group key: same block + row + price + drop_type + high_price + site + performance_id
+    const k=[r.site,r.performance_id,r.block,r.row_label,r.current_price,r.drop_type,r.high_price].join('|');
+    if(!gmap.has(k))gmap.set(k,[]);
+    gmap.get(k).push(r);
+  }
+  for(const r of rows){
+    const uid=r.site+'_'+r.performance_id+'_'+r.seat_id;
+    if(used.has(uid))continue;
+    const k=[r.site,r.performance_id,r.block,r.row_label,r.current_price,r.drop_type,r.high_price].join('|');
+    const neighbors=gmap.get(k).filter(s=>!used.has(s.site+'_'+s.performance_id+'_'+s.seat_id));
+    neighbors.sort((a,b)=>(a.seat_number||'').localeCompare(b.seat_number||'',undefined,{numeric:true}));
+    const run=[neighbors[0]];
+    for(let i=1;i<neighbors.length;i++){
+      const prev=parseInt(neighbors[i-1].seat_number);
+      const curr=parseInt(neighbors[i].seat_number);
+      if(curr===prev+1)run.push(neighbors[i]);else break;
     }
-  } catch {}
+    for(const s of run)used.add(s.site+'_'+s.performance_id+'_'+s.seat_id);
+    const nums=run.map(s=>s.seat_number).filter(Boolean);
+    const seatDisp=nums.length===0?'':nums.length===1?'Seat '+nums[0]:'Seats '+nums[0]+'-'+nums[nums.length-1];
+    const rep=run[0];
+    cls.push({
+      ...rep,
+      _normCat:normCat(rep.category),
+      _dispPrice:dp(rep.current_price,rep.site),
+      _highPrice:dp(rep.high_price,rep.site),
+      _dropPrice:dp(rep.drop_raw,rep.site),
+      _dropPct:rep.high_price>0?Math.round((rep.drop_raw/rep.high_price)*100):0,
+      _fvDiffAmt:rep.face_value!=null?dp(rep.current_price,rep.site)-rep.face_value:null,
+      _fvDiffPct:rep.face_value!=null&&rep.face_value>0?Math.round((dp(rep.current_price,rep.site)/rep.face_value-1)*100):null,
+      _seatDisp:seatDisp,
+      _count:run.length,
+      _seats:run,
+    });
+  }
+  return cls;
 }
 
-// ---- Build filter UI from data ----
-function buildFilters() {
-  // Category pills
-  const catCounts = {};
-  for (const r of S.raw) {
-    const c = normCat(r.category);
-    catCounts[c] = (catCounts[c] || 0) + 1;
-  }
-  const catOrder = ['Cat 1','Cat 2','Cat 3','Cat 4','Accessible','Supporter','Other'];
-  const pills = catOrder.filter(c => catCounts[c]).map(c => {
-    const active = S.filters.categories.has(c) ? ' active' : '';
-    return `<button class="cat-pill${active}" data-cat="${c}">${esc(c)}<span class="pill-count"> &middot;${catCounts[c]}</span></button>`;
-  }).join('');
-  $('catPills').innerHTML = pills;
-
-  // Game dropdown
-  const games = new Map();
-  for (const r of S.raw) {
-    if (!games.has(r.match_number)) games.set(r.match_number, r.matchup || 'Match ' + r.match_number);
-  }
-  const gameHtml = [...games.entries()].sort((a,b) => a[0]-b[0]).map(([mn, mu]) => {
-    const chk = S.filters.games.has(mn) ? ' checked' : '';
-    return `<label class="mf-item"><input type="checkbox" value="${mn}"${chk}> #${mn} &middot; ${esc(mu)}</label>`;
-  }).join('');
-  $('gameDd').innerHTML = gameHtml;
-  updateMfLabel('gameBtn', S.filters.games, games.size, 'All games');
-
-  // City dropdown
-  const cities = new Set(S.raw.map(r => r.city).filter(Boolean));
-  const cityHtml = [...cities].sort().map(c => {
-    const chk = S.filters.cities.has(c) ? ' checked' : '';
-    return `<label class="mf-item"><input type="checkbox" value="${c}"${chk}> ${esc(c)}</label>`;
-  }).join('');
-  $('cityDd').innerHTML = cityHtml;
-  updateMfLabel('cityBtn', S.filters.cities, cities.size, 'All cities');
-
-  // Sort
-  const sortLabels = { drop: 'Biggest drop', price: 'Cheapest', new: 'Newest first', match: 'Match #' };
-  $('sortBtn').textContent = sortLabels[S.sort] || 'Biggest drop';
-  $('sortDd').querySelectorAll('input').forEach(inp => { inp.checked = inp.value === S.sort; });
-}
-
-function updateMfLabel(btnId, filterSet, total, allLabel) {
-  const btn = $(btnId);
-  if (filterSet.size === 0 || filterSet.size === total) {
-    btn.textContent = allLabel;
-    btn.classList.remove('mf-active');
-  } else if (filterSet.size === 1) {
-    btn.textContent = [...filterSet][0];
-    btn.classList.add('mf-active');
-  } else {
-    btn.textContent = filterSet.size + ' selected';
-    btn.classList.add('mf-active');
-  }
-}
-
-// ---- Apply filters + sort ----
-function applyFilters() {
-  const { categories, games, cities } = S.filters;
-  S.filtered = S.raw.filter(r => {
-    if (!categories.has(normCat(r.category))) return false;
-    if (games.size > 0 && !games.has(r.match_number)) return false;
-    if (cities.size > 0 && !cities.has(r.city)) return false;
+// Filters
+function applyFilters(){
+  const{categories,sites,games,cities}=filters;
+  filtered=clusters.filter(c=>{
+    if(!categories.has(c._normCat))return false;
+    if(!sites.has(c.site))return false;
+    if(games.size>0&&!games.has(c.match_number))return false;
+    if(cities.size>0&&!cities.has(c.city))return false;
     return true;
   });
-
-  // Sort
-  if (S.sort === 'drop') {
-    S.filtered.sort((a, b) => {
-      if (a.drop_type !== b.drop_type) return a.drop_type === 'reduced' ? -1 : 1;
-      return (b.drop_raw || 0) - (a.drop_raw || 0);
-    });
-  } else if (S.sort === 'price') {
-    S.filtered.sort((a, b) => (a.current_price || 0) - (b.current_price || 0));
-  } else if (S.sort === 'new') {
-    S.filtered.sort((a, b) => {
-      if (a.drop_type !== b.drop_type) return a.drop_type === 'new' ? -1 : 1;
-      return new Date(b.detected_at || 0) - new Date(a.detected_at || 0);
-    });
-  } else {
-    S.filtered.sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
-  }
-
+  applySort();
+}
+function applySort(){
+  const s=sort;
+  filtered.sort((a,b)=>{
+    if(s==='dropPct'){
+      if(a.drop_type!==b.drop_type)return a.drop_type==='reduced'?-1:1;
+      return(b._dropPct||0)-(a._dropPct||0);
+    }
+    if(s==='dropAmt'){
+      if(a.drop_type!==b.drop_type)return a.drop_type==='reduced'?-1:1;
+      return(b._dropPrice||0)-(a._dropPrice||0);
+    }
+    if(s==='cheap')return(a._dispPrice||0)-(b._dispPrice||0);
+    if(s==='new'){
+      if(a.drop_type!==b.drop_type)return a.drop_type==='new'?-1:1;
+      return new Date(b.detected_at||0)-new Date(a.detected_at||0);
+    }
+    if(s==='fvPct')return(b._fvDiffPct??-9999)-(a._fvDiffPct??-9999);
+    if(s==='fvAmt')return(b._fvDiffAmt??-9999)-(a._fvDiffAmt??-9999);
+    return 0;
+  });
+  page=1;
   render();
 }
 
-// ---- Render ----
-function render() {
-  const reduced = S.filtered.filter(r => r.drop_type === 'reduced');
-  const newRows = S.filtered.filter(r => r.drop_type === 'new');
+// Render
+function render(){
+  const drops=filtered.filter(c=>c.drop_type==='reduced');
+  const news=filtered.filter(c=>c.drop_type==='new');
+  $('statDrops').textContent=drops.length.toLocaleString();
+  $('statNew').textContent=news.length.toLocaleString();
+  $('statTotal').textContent=filtered.length.toLocaleString();
 
-  $('statDrops').textContent = reduced.length.toLocaleString();
-  $('statNew').textContent = newRows.length.toLocaleString();
+  if(filtered.length===0){$('ticketList').innerHTML='';$('emptyState').style.display='';return}
+  $('emptyState').style.display='none';
 
-  // Group by match
-  const groups = new Map();
-  for (const r of S.filtered) {
-    const key = r.match_number || r.performance_id;
-    if (!groups.has(key)) groups.set(key, { info: r, rows: [] });
-    groups.get(key).rows.push(r);
+  const visible=filtered.slice(0,page*PAGE_SIZE);
+  let html='';
+  for(let i=0;i<visible.length;i++){
+    const c=visible[i];
+    html+=renderRow(c,i);
   }
-  $('statMatches').textContent = groups.size.toLocaleString();
-
-  if (groups.size === 0) {
-    matchList.innerHTML = '';
-    emptyState.style.display = '';
-    return;
+  if(visible.length<filtered.length){
+    html+=`<button class="load-more" id="loadMoreBtn">Load ${Math.min(PAGE_SIZE,filtered.length-visible.length)} more (${visible.length} of ${filtered.length})</button>`;
   }
-  emptyState.style.display = 'none';
-
-  // Sort groups by match_number (for match sort) or by first row's sort position
-  const sortedGroups = [...groups.entries()];
-  if (S.sort === 'match') {
-    sortedGroups.sort((a, b) => (a[1].info.match_number || 0) - (b[1].info.match_number || 0));
-  }
-
-  let html = '';
-  for (const [key, g] of sortedGroups) {
-    const info = g.info;
-    const collapsed = S.collapsed.has(key);
-    const dc = g.rows.filter(r => r.drop_type === 'reduced').length;
-    const nc = g.rows.filter(r => r.drop_type === 'new').length;
-
-    html += `<div class="match-group">`;
-    html += `<div class="match-hdr" data-key="${key}">`;
-    html += `<div class="match-info"><div class="match-teams">${esc(info.matchup || 'TBD')}</div>`;
-    html += `<div class="match-meta">`;
-    html += `<span>Match ${info.match_number || '?'}</span>`;
-    if (info.city) html += `<span class="sep">&middot;</span><span>${esc(info.city)}</span>`;
-    if (info.match_date) html += `<span class="sep">&middot;</span><span>${fmtDate(info.match_date)}</span>`;
-    html += `</div></div>`;
-    html += `<div class="match-summary">`;
-    if (dc) html += `<span class="summary-badge drop">${dc}</span>`;
-    if (nc) html += `<span class="summary-badge new">${nc}</span>`;
-    html += `<svg class="chevron${collapsed ? '' : ' open'}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 6 8 10 12 6"/></svg>`;
-    html += `</div></div>`;
-
-    html += `<div class="match-body" style="${collapsed ? 'display:none' : ''}">`;
-    for (const r of g.rows) {
-      const site = r.site || 'resale';
-      const cur = dispPrice(r.current_price, site);
-      const cat = normCat(r.category);
-      const loc = [r.block, r.row_label ? 'Row ' + r.row_label : '', r.seat_number ? 'Seat ' + r.seat_number : ''].filter(Boolean).join(', ');
-
-      html += `<div class="seat-row">`;
-      html += `<div class="seat-loc"><div class="seat-block">${esc(loc || 'Unknown')}<span class="seat-cat">${esc(cat)}</span></div></div>`;
-
-      if (r.drop_type === 'reduced') {
-        const hi = dispPrice(r.high_price, site);
-        const pct = r.high_price > 0 ? Math.round((r.drop_raw / r.high_price) * 100) : 0;
-        html += `<div class="seat-prices"><span class="price-now">${fmtUSD(cur)}</span></div>`;
-        html += `<div class="seat-drop"><span class="drop-was">was ${fmtUSD(hi)}, ${pct}% less</span></div>`;
-      } else {
-        html += `<div class="seat-prices"><span class="price-now">${fmtUSD(cur)}</span></div>`;
-        html += `<div class="seat-drop"><span class="badge-new">NEW</span></div>`;
-      }
-      html += `</div>`;
-    }
-    html += `</div></div>`;
-  }
-  matchList.innerHTML = html;
+  $('ticketList').innerHTML=html;
 }
 
-// ---- Fetch data ----
-async function fetchDrops(licenseKey) {
-  loginView.style.display = 'none';
-  loadingView.style.display = '';
-  mainView.style.display = 'none';
-  errorBanner.style.display = 'none';
+function renderRow(c,idx){
+  const matchAbbr=abbreviate(c.matchup);
+  let compact=`<div class="ticket-compact">`;
+  compact+=`<span class="t-match">${esc(matchAbbr)}</span>`;
+  compact+=`<span class="t-cat">${esc(c._normCat)}</span>`;
+  if(c.block)compact+=`<span class="t-block">Blk ${esc(c.block)}</span>`;
+  if(c._count>1)compact+=`<span class="t-seats">&times;${c._count}</span>`;
+  compact+=`<span class="t-spacer"></span>`;
+  compact+=`<span class="t-price">${fmt(c._dispPrice)}</span>`;
 
-  try {
-    const resp = await fetch(EDGE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'apikey': SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ licenseKey }),
-    });
-    const json = await resp.json();
+  if(c.drop_type==='reduced'){
+    compact+=`<span class="t-drop">was ${fmt(c._highPrice)} ${ago(c.high_seen_at)}, ${c._dropPct}% less</span>`;
+  }else{
+    compact+=`<span class="t-new-badge">NEW</span>`;
+    compact+=`<span class="t-ago">${ago(c.detected_at)}</span>`;
+    if(c._fvDiffPct!=null)compact+=`<span class="t-face">${c._fvDiffPct>0?'+':''}${c._fvDiffPct}% vs face</span>`;
+  }
+  compact+=`</div>`;
 
-    if (!json.ok) {
-      if (resp.status === 403) {
-        localStorage.removeItem(LS_KEY);
-        loadingView.style.display = 'none';
-        loginView.style.display = '';
-        loginError.textContent = json.error || 'Invalid or expired license key';
-        loginError.style.display = '';
-        keyInput.classList.add('error');
-        return;
-      }
+  // Expanded detail
+  const teams=(c.matchup||'TBD').split(' vs ');
+  let det=`<div class="ticket-detail" id="det-${idx}">`;
+  det+=`<div class="td-teams">${esc(teams[0]||'')} vs ${esc(teams[1]||'')}</div>`;
+  det+=`<div class="td-meta">Match ${c.match_number||'?'} &middot; ${esc(c.city||'')} &middot; ${fmtDate(c.match_date)}</div>`;
+  det+=`<div class="td-grid">`;
+  det+=`<div><div class="td-label">Block</div><div class="td-val">${esc(c.block||'—')}</div></div>`;
+  det+=`<div><div class="td-label">Row</div><div class="td-val">${esc(c.row_label||'—')}</div></div>`;
+  det+=`<div><div class="td-label">${c._count>1?'Seats':'Seat'}</div><div class="td-val">${esc(c._seatDisp||'—')}</div></div>`;
+  det+=`<div><div class="td-label">Category</div><div class="td-val">${esc(c._normCat)}</div></div>`;
+  det+=`<div><div class="td-label">Current Price</div><div class="td-val mono">${fmt(c._dispPrice)}</div></div>`;
+  if(c.drop_type==='reduced'){
+    det+=`<div><div class="td-label">Was</div><div class="td-val mono">${fmt(c._highPrice)} (${ago(c.high_seen_at)})</div></div>`;
+    det+=`<div><div class="td-label">Drop</div><div class="td-val mono green">-${fmt(c._dropPrice)} (${c._dropPct}%)</div></div>`;
+  }else{
+    det+=`<div><div class="td-label">Listed</div><div class="td-val">${ago(c.detected_at)}</div></div>`;
+  }
+  if(c.face_value!=null){
+    const diff=c._fvDiffAmt;
+    const pct=c._fvDiffPct;
+    const color=diff!=null&&diff<=0?'green':'accent';
+    det+=`<div><div class="td-label">Face Value</div><div class="td-val mono">$${c.face_value}</div></div>`;
+    det+=`<div><div class="td-label">vs Face</div><div class="td-val mono ${color}">${diff!=null?(diff>0?'+':'')+fmt(Math.abs(diff))+' ('+((pct>0?'+':'')+pct)+'%)':'—'}</div></div>`;
+  }
+  det+=`</div></div>`;
+
+  return`<div class="ticket-row" data-idx="${idx}">${compact}</div>${det}`;
+}
+
+function abbreviate(matchup){
+  if(!matchup)return'TBD';
+  return matchup.replace(/\b(\w{3})\w+/g,'$1').replace(/\s+vs\s+/i,' v ');
+}
+
+// Build filters from data
+function buildFilterUI(){
+  const catCounts={},siteCounts={};
+  for(const c of clusters){
+    catCounts[c._normCat]=(catCounts[c._normCat]||0)+1;
+    siteCounts[c.site]=(siteCounts[c.site]||0)+1;
+  }
+  const catOrder=['Cat 1','Cat 2','Cat 3','Cat 4','Accessible','Supporter','Other'];
+  $('catPills').innerHTML=catOrder.filter(c=>catCounts[c]).map(c=>
+    `<button class="pill${filters.categories.has(c)?' active':''}" data-f="cat" data-v="${c}">${esc(c)}<span class="cnt"> &middot;${catCounts[c]}</span></button>`
+  ).join('');
+  const siteLabels={resale:'Resale',lms:'LMS'};
+  $('sitePills').innerHTML=Object.keys(siteCounts).sort().map(s=>
+    `<button class="pill${filters.sites.has(s)?' active':''}" data-f="site" data-v="${s}">${siteLabels[s]||s}<span class="cnt"> &middot;${siteCounts[s]}</span></button>`
+  ).join('');
+
+  const games=new Map();
+  for(const c of clusters)if(!games.has(c.match_number))games.set(c.match_number,c.matchup||'Match '+c.match_number);
+  $('gameDd').innerHTML=[...games.entries()].sort((a,b)=>a[0]-b[0]).map(([n,m])=>
+    `<label class="mf-item"><input type="checkbox" value="${n}"${filters.games.has(n)?' checked':''}> #${n} ${esc(m)}</label>`
+  ).join('');
+  updateMfLabel('gameBtn',filters.games,games.size,'All games');
+
+  const cities=new Set(clusters.map(c=>c.city).filter(Boolean));
+  $('cityDd').innerHTML=[...cities].sort().map(c=>
+    `<label class="mf-item"><input type="checkbox" value="${c}"${filters.cities.has(c)?' checked':''}> ${esc(c)}</label>`
+  ).join('');
+  updateMfLabel('cityBtn',filters.cities,cities.size,'All cities');
+
+  const sortLabels={dropPct:'Drop %',dropAmt:'Drop $',cheap:'Cheapest',new:'Newest',fvPct:'vs Face %',fvAmt:'vs Face $'};
+  $('sortBtn').textContent=sortLabels[sort]||'Sort';
+  $('sortDd').querySelectorAll('input').forEach(i=>{i.checked=i.value===sort});
+}
+
+function updateMfLabel(id,set,total,all){
+  const b=$(id);
+  if(set.size===0||set.size===total){b.textContent=all;b.classList.remove('mf-active')}
+  else if(set.size===1){b.textContent=[...set][0];b.classList.add('mf-active')}
+  else{b.textContent=set.size+' selected';b.classList.add('mf-active')}
+}
+
+// Save/load filters
+function saveFilters(){localStorage.setItem(LS_FILT,JSON.stringify({categories:[...filters.categories],sites:[...filters.sites],games:[...filters.games],cities:[...filters.cities],sort}))}
+function loadFilters(){try{const f=JSON.parse(localStorage.getItem(LS_FILT));if(f){if(f.categories?.length)filters.categories=new Set(f.categories);if(f.sites?.length)filters.sites=new Set(f.sites);if(f.games?.length)filters.games=new Set(f.games);if(f.cities?.length)filters.cities=new Set(f.cities);if(f.sort)sort=f.sort}}catch{}}
+
+// Fetch
+async function fetchDrops(key){
+  $('loginView').style.display='none';$('loadingView').style.display='';$('mainView').style.display='none';
+  try{
+    const resp=await fetch(EDGE_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ANON_KEY,'apikey':ANON_KEY},body:JSON.stringify({licenseKey:key})});
+    const json=await resp.json();
+    if(!json.ok){
+      if(resp.status===403){localStorage.removeItem(LS_KEY);$('loadingView').style.display='none';$('loginView').style.display='';$('loginError').textContent=json.error||'Invalid license';$('loginError').style.display='';$('keyInput').classList.add('error');return}
       throw new Error(json.error);
     }
-
-    S.raw = json.data || [];
-    loadingView.style.display = 'none';
-    mainView.style.display = '';
-    headerActions.style.display = '';
-    buildFilters();
-    applyFilters();
-  } catch (err) {
-    loadingView.style.display = 'none';
-    mainView.style.display = '';
-    headerActions.style.display = '';
-    errorBanner.textContent = 'Failed to load data. Tap refresh to retry.';
-    errorBanner.style.display = '';
+    raw=json.data||[];
+    clusters=buildClusters(raw);
+    $('loadingView').style.display='none';$('mainView').style.display='';$('headerRight').style.display='';
+    lastFetchAt=Date.now();startTimer();
+    buildFilterUI();applyFilters();
+  }catch(e){
+    $('loadingView').style.display='none';$('mainView').style.display='';$('headerRight').style.display='';
+    $('ticketList').innerHTML='<div class="empty-state"><div class="empty-title">Connection error</div><div class="empty-hint">Tap refresh to retry.</div></div>';
   }
 }
 
-// ---- Event listeners ----
+// Timer
+function startTimer(){
+  if(timerInterval)clearInterval(timerInterval);
+  updateTimer();
+  timerInterval=setInterval(updateTimer,30000);
+}
+function updateTimer(){
+  if(!lastFetchAt)return;
+  const m=Math.round((Date.now()-lastFetchAt)/60000);
+  $('updatedAgo').textContent=m<1?'Updated just now':'Updated '+m+'m ago';
+}
 
-// Login
-$('unlockBtn').addEventListener('click', () => {
-  loginError.style.display = 'none';
-  keyInput.classList.remove('error');
-  const key = keyInput.value.trim();
-  if (!key) { loginError.textContent = 'Please enter a license key'; loginError.style.display = ''; return; }
-  localStorage.setItem(LS_KEY, key);
-  fetchDrops(key);
+// Events
+$('unlockBtn').addEventListener('click',()=>{
+  $('loginError').style.display='none';$('keyInput').classList.remove('error');
+  const k=$('keyInput').value.trim();if(!k){$('loginError').textContent='Enter a license key';$('loginError').style.display='';return}
+  localStorage.setItem(LS_KEY,k);fetchDrops(k);
 });
-keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') $('unlockBtn').click(); });
+$('keyInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('unlockBtn').click()});
 
-// Refresh
-$('refreshBtn').addEventListener('click', () => {
-  const key = localStorage.getItem(LS_KEY);
-  if (!key) return;
+$('refreshBtn').addEventListener('click',()=>{
+  const k=localStorage.getItem(LS_KEY);if(!k)return;
   $('refreshBtn').classList.add('spinning');
-  fetchDrops(key).finally(() => $('refreshBtn').classList.remove('spinning'));
+  fetchDrops(k).finally(()=>$('refreshBtn').classList.remove('spinning'));
 });
 
-// Logout
-$('logoutBtn').addEventListener('click', () => {
-  localStorage.removeItem(LS_KEY);
-  mainView.style.display = 'none';
-  headerActions.style.display = 'none';
-  errorBanner.style.display = 'none';
-  loginView.style.display = '';
-  keyInput.value = '';
+$('logoutBtn').addEventListener('click',()=>{
+  localStorage.removeItem(LS_KEY);$('mainView').style.display='none';$('headerRight').style.display='none';
+  $('loginView').style.display='';$('keyInput').value='';if(timerInterval)clearInterval(timerInterval);
 });
 
-// Category pills
-$('catPills').addEventListener('click', e => {
-  const pill = e.target.closest('.cat-pill');
-  if (!pill) return;
-  const cat = pill.dataset.cat;
-  if (S.filters.categories.has(cat)) S.filters.categories.delete(cat);
-  else S.filters.categories.add(cat);
-  if (S.filters.categories.size === 0) S.filters.categories = new Set(DEFAULT_CATS);
-  pill.classList.toggle('active', S.filters.categories.has(cat));
-  saveFilters();
-  applyFilters();
-  // Update pill active states
-  $('catPills').querySelectorAll('.cat-pill').forEach(p => p.classList.toggle('active', S.filters.categories.has(p.dataset.cat)));
+// Pill toggles
+document.addEventListener('click',e=>{
+  const pill=e.target.closest('.pill');
+  if(pill){
+    const f=pill.dataset.f,v=pill.dataset.v;
+    if(f==='cat'){
+      if(filters.categories.has(v))filters.categories.delete(v);else filters.categories.add(v);
+      if(filters.categories.size===0)filters.categories=new Set(DEFAULT_CATS);
+    }else if(f==='site'){
+      if(filters.sites.has(v))filters.sites.delete(v);else filters.sites.add(v);
+      if(filters.sites.size===0)filters.sites=new Set(DEFAULT_SITES);
+    }
+    pill.classList.toggle('active');saveFilters();applyFilters();return;
+  }
+  // Load more
+  if(e.target.id==='loadMoreBtn'){page++;render();return}
+  // Expand/collapse ticket row
+  const row=e.target.closest('.ticket-row');
+  if(row){
+    const det=$('det-'+row.dataset.idx);
+    if(det)det.classList.toggle('open');
+    return;
+  }
+  // Close dropdowns
+  document.querySelectorAll('.mf-dropdown.open').forEach(d=>d.classList.remove('open'));
 });
 
-// Multi-select dropdowns (game, city)
-function bindMf(wrapId, ddId, btnId, filterKey, allLabel) {
-  const btn = $(btnId), dd = $(ddId);
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    document.querySelectorAll('.mf-dropdown.open').forEach(d => { if (d !== dd) d.classList.remove('open'); });
-    dd.classList.toggle('open');
-  });
-  dd.addEventListener('click', e => e.stopPropagation());
-  dd.addEventListener('change', e => {
-    const val = e.target.type === 'checkbox' ? (isNaN(e.target.value) ? e.target.value : Number(e.target.value)) : e.target.value;
-    if (e.target.checked) S.filters[filterKey].add(val);
-    else S.filters[filterKey].delete(val);
-    const total = dd.querySelectorAll('input').length;
-    updateMfLabel(btnId, S.filters[filterKey], total, allLabel);
-    saveFilters();
-    applyFilters();
+// Multi-select dropdowns
+function bindMf(btnId,ddId,filterKey,allLabel){
+  const btn=$(btnId),dd=$(ddId);
+  btn.addEventListener('click',e=>{e.stopPropagation();document.querySelectorAll('.mf-dropdown.open').forEach(d=>{if(d!==dd)d.classList.remove('open')});dd.classList.toggle('open')});
+  dd.addEventListener('click',e=>e.stopPropagation());
+  dd.addEventListener('change',e=>{
+    const v=isNaN(e.target.value)?e.target.value:Number(e.target.value);
+    if(e.target.checked)filters[filterKey].add(v);else filters[filterKey].delete(v);
+    updateMfLabel(btnId,filters[filterKey],dd.querySelectorAll('input').length,allLabel);
+    saveFilters();applyFilters();
   });
 }
-bindMf('gameWrap', 'gameDd', 'gameBtn', 'games', 'All games');
-bindMf('cityWrap', 'cityDd', 'cityBtn', 'cities', 'All cities');
+bindMf('gameBtn','gameDd','games','All games');
+bindMf('cityBtn','cityDd','cities','All cities');
 
 // Sort dropdown
-const sortBtn = $('sortBtn'), sortDd = $('sortDd');
-sortBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  document.querySelectorAll('.mf-dropdown.open').forEach(d => { if (d !== sortDd) d.classList.remove('open'); });
-  sortDd.classList.toggle('open');
-});
-sortDd.addEventListener('click', e => e.stopPropagation());
-sortDd.addEventListener('change', e => {
-  S.sort = e.target.value;
-  const labels = { drop: 'Biggest drop', price: 'Cheapest', new: 'Newest first', match: 'Match #' };
-  sortBtn.textContent = labels[S.sort];
-  sortDd.classList.remove('open');
-  saveFilters();
-  applyFilters();
+const sortBtn=$('sortBtn'),sortDd=$('sortDd');
+sortBtn.addEventListener('click',e=>{e.stopPropagation();document.querySelectorAll('.mf-dropdown.open').forEach(d=>{if(d!==sortDd)d.classList.remove('open')});sortDd.classList.toggle('open')});
+sortDd.addEventListener('click',e=>e.stopPropagation());
+sortDd.addEventListener('change',e=>{
+  sort=e.target.value;
+  const labels={dropPct:'Drop %',dropAmt:'Drop $',cheap:'Cheapest',new:'Newest',fvPct:'vs Face %',fvAmt:'vs Face $'};
+  sortBtn.textContent=labels[sort];sortDd.classList.remove('open');saveFilters();applySort();
 });
 
-// Close dropdowns on outside click
-document.addEventListener('click', () => {
-  document.querySelectorAll('.mf-dropdown.open').forEach(d => d.classList.remove('open'));
-});
-
-// Collapsible match groups (delegated)
-matchList.addEventListener('click', e => {
-  const hdr = e.target.closest('.match-hdr');
-  if (!hdr) return;
-  const key = hdr.dataset.key;
-  const numKey = isNaN(key) ? key : Number(key);
-  const body = hdr.nextElementSibling;
-  const chev = hdr.querySelector('.chevron');
-  if (S.collapsed.has(numKey)) {
-    S.collapsed.delete(numKey);
-    body.style.display = '';
-    chev.classList.add('open');
-  } else {
-    S.collapsed.add(numKey);
-    body.style.display = 'none';
-    chev.classList.remove('open');
-  }
-});
-
-// Sticky filter bar shadow
-const sentinel = document.createElement('div');
-filterBar.parentNode.insertBefore(sentinel, filterBar);
-const obs = new IntersectionObserver(([entry]) => {
-  filterBar.classList.toggle('stuck', !entry.isIntersecting);
-}, { threshold: 0 });
-obs.observe(sentinel);
-
-// ---- Init ----
+// Init
 loadFilters();
-const savedKey = localStorage.getItem(LS_KEY);
-if (savedKey) {
-  fetchDrops(savedKey);
-} else {
-  loginView.style.display = '';
-}
+const savedKey=localStorage.getItem(LS_KEY);
+if(savedKey)fetchDrops(savedKey);else $('loginView').style.display='';
 </script>
 </body>
 </html>
