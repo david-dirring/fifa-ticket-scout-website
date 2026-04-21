@@ -275,8 +275,8 @@ function applySort(){
       if(a.drop_type!==b.drop_type)return a.drop_type==='new'?-1:1;
       return new Date(b.detected_at||0)-new Date(a.detected_at||0);
     }
-    if(s==='fvPct')return(b._fvDiffPct??-9999)-(a._fvDiffPct??-9999);
-    if(s==='fvAmt')return(b._fvDiffAmt??-9999)-(a._fvDiffAmt??-9999);
+    if(s==='fvPct')return(a._fvDiffPct??9999)-(b._fvDiffPct??9999);
+    if(s==='fvAmt')return(a._fvDiffAmt??9999)-(b._fvDiffAmt??9999);
     return 0;
   });
   page=1;
