@@ -414,6 +414,7 @@
 
 <script>
 const EDGE_URL = 'https://yaydpahqlqwesqdddgfi.supabase.co/functions/v1/get-price-drops';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlheWRwYWhxbHF3ZXNxZGRkZ2ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MDg1NDEsImV4cCI6MjA5MTQ4NDU0MX0.QQJuKz9Fnb_schlS6FEioMtyRvrJVBwAL71dzitZU-g';
 const LS_KEY = 'fts_license_key';
 
 const loginView = document.getElementById('loginView');
@@ -472,7 +473,11 @@ async function fetchDrops(licenseKey) {
   try {
     const resp = await fetch(EDGE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'apikey': SUPABASE_ANON_KEY,
+      },
       body: JSON.stringify({ licenseKey }),
     });
     const json = await resp.json();
