@@ -100,17 +100,18 @@
     .ticket-compact{display:flex;align-items:flex-start;gap:6px}
     .t-left{flex:1;min-width:0}
     .t-line1{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-    .t-match{font-size:11px;font-weight:700;color:var(--gray-700);white-space:nowrap}
+    .t-match{font-size:11px;font-weight:700;color:var(--gray-800);white-space:nowrap}
+    .t-matchnum{font-size:9px;font-weight:600;color:var(--gray-400);white-space:nowrap}
     .t-cat{font-size:8px;font-weight:600;color:var(--gray-700);background:var(--gray-200);padding:1px 4px;border-radius:3px;white-space:nowrap}
     .t-block{font-size:10px;color:var(--gray-600);white-space:nowrap}
     .t-seats{font-size:9px;color:var(--gray-500);white-space:nowrap}
-    .t-line2{font-size:9px;color:var(--gray-500);margin-top:1px}
+    .t-line2{font-size:9px;color:var(--gray-500);margin-top:2px;display:flex;align-items:center;gap:4px}
     .t-right{text-align:right;flex-shrink:0}
-    .t-price{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--gray-900);font-variant-numeric:tabular-nums;white-space:nowrap}
-    .t-drop{font-size:9px;font-weight:600;color:var(--green);white-space:nowrap;margin-top:1px}
-    .t-new-info{margin-top:1px}
+    .t-line1r{white-space:nowrap;display:flex;align-items:center;gap:4px;justify-content:flex-end}
+    .t-line2r{font-size:9px;font-weight:600;color:var(--green);white-space:nowrap;margin-top:1px}
+    .t-price{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--gray-900);font-variant-numeric:tabular-nums}
+    .t-ago{font-size:8px;color:var(--gray-400)}
     .t-new-badge{font-size:7px;font-weight:700;padding:1px 4px;border-radius:3px;background:var(--fifa-purple-dim);color:var(--fifa-purple);letter-spacing:.3px}
-    .t-face{font-size:8px;color:var(--gray-500);margin-left:3px}
 
     .ticket-detail{display:none;padding:10px 12px 12px;background:var(--gray-50);border-bottom:1px solid var(--border);font-size:12px;color:var(--gray-700);line-height:1.6}
     .ticket-detail.open{display:block}
@@ -353,31 +354,29 @@ function render(){
 }
 
 function renderRow(c,idx){
-  const matchAbbr=abbreviate(c.matchup);
+  const home=c.home_team||c.matchup||'TBD';
+  const away=c.away_team||'';
+  const matchLabel=away?esc(home)+' vs '+esc(away):esc(home);
   let html=`<div class="ticket-row" data-idx="${idx}"><div class="ticket-compact">`;
-  html+=`<div class="t-left">`;
-  html+=`<div class="t-line1">`;
-  html+=`<span class="t-match">${esc(matchAbbr)}</span>`;
-  html+=`<span class="t-cat">${esc(c._normCat)}</span>`;
-  if(c.block)html+=`<span class="t-block">Blk ${esc(c.block)}</span>`;
+  // Line 1: teams + match# (left) | "as of Xm ago" + price (right)
+  html+=`<div class="t-left"><div class="t-line1"><span class="t-match">${matchLabel}</span>`;
+  if(c.match_number)html+=`<span class="t-matchnum">m${c.match_number}</span>`;
   if(c._count>1)html+=`<span class="t-seats">&times;${c._count}</span>`;
   html+=`</div>`;
-  // Line 2: time info
-  if(c.drop_type==='reduced'){
-    html+=`<div class="t-line2">as of ${ago(c.detected_at)}</div>`;
-  }else{
-    html+=`<div class="t-line2">new ${ago(c.detected_at)}${c._fvDiffPct!=null?' &middot; '+(c._fvDiffPct>0?'+':'')+c._fvDiffPct+'% vs face':''}</div>`;
-  }
-  html+=`</div>`; // t-left
+  // Line 2: cat + block (left) | drop info (right)
+  html+=`<div class="t-line2"><span class="t-cat">${esc(c._normCat)}</span>`;
+  if(c.block)html+=` <span class="t-block">Blk ${esc(c.block)}</span>`;
+  html+=`</div></div>`; // t-left
 
   html+=`<div class="t-right">`;
-  html+=`<div class="t-price">${fmt(c._dispPrice)}</div>`;
   if(c.drop_type==='reduced'){
-    html+=`<div class="t-drop">was ${fmt(c._highPrice)} ${ago(c.high_seen_at)}, ${c._dropPct}% less</div>`;
+    html+=`<div class="t-line1r"><span class="t-ago">as of ${ago(c.detected_at)}</span> <span class="t-price">${fmt(c._dispPrice)}</span></div>`;
+    html+=`<div class="t-line2r">was ${fmt(c._highPrice)} ${ago(c.high_seen_at)}, ${c._dropPct}% less</div>`;
   }else{
-    html+=`<div class="t-new-info"><span class="t-new-badge">NEW</span></div>`;
+    html+=`<div class="t-line1r"><span class="t-new-badge">NEW</span> <span class="t-ago">${ago(c.detected_at)}</span> <span class="t-price">${fmt(c._dispPrice)}</span></div>`;
+    if(c._fvDiffPct!=null)html+=`<div class="t-line2r">${c._fvDiffPct>0?'+':''}${c._fvDiffPct}% vs face</div>`;
   }
-  html+=`</div>`; // t-right
+  html+=`</div>`;
   html+=`</div></div>`; // ticket-compact, ticket-row
 
   // Detail — use full team names if available
