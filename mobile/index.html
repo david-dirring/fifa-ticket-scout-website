@@ -33,6 +33,15 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .btn-text{font-size:10px;font-weight:600;color:var(--gray-500);background:none;border:none;cursor:pointer}
 
+    /* Menu */
+    .menu-overlay{display:none;position:fixed;inset:0;z-index:150}
+    .menu-overlay.open{display:block}
+    .menu-dropdown{display:none;position:absolute;top:42px;right:12px;background:var(--white);border:1px solid var(--border-dark);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:160;min-width:160px;padding:4px 0}
+    .menu-dropdown.open{display:block}
+    .menu-item{display:block;width:100%;padding:10px 16px;font-size:13px;color:var(--gray-700);text-decoration:none;border:none;background:none;text-align:left;cursor:pointer;font-family:inherit}
+    .menu-item:hover{background:var(--gray-50)}
+    .menu-active{color:var(--fifa-purple);font-weight:600}
+
     /* Pull-to-refresh indicator */
     .ptr-indicator{text-align:center;padding:8px;font-size:11px;color:var(--fifa-purple);font-weight:600;display:none}
 
@@ -128,10 +137,18 @@
     <div class="brand"><img class="brand-logo" src="../fifa-ticket-scout/icon128.png" alt=""><div><h1>FIFA Ticket Scout <span style="color:var(--green);font-weight:800">RADAR</span></h1><div style="font-size:9px;color:var(--gray-500);font-weight:400;letter-spacing:.2px">Scanning the market, detecting drops</div></div></div>
     <div class="header-right" id="headerRight" style="display:none">
       <span class="header-updated" id="updatedAgo"></span>
-      <button class="btn-icon" id="refreshBtn" title="Refresh"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17"/><path d="M14.5 8a6.5 6.5 0 0 1-11.48 4.17"/><polyline points="13 1 13 4.5 9.5 4.5"/><polyline points="3 15 3 11.5 6.5 11.5"/></svg></button>
-      <button class="btn-text" id="logoutBtn">Log out</button>
+      <button class="btn-icon" id="refreshBtn" title="Refresh"><svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17"/><path d="M14.5 8a6.5 6.5 0 0 1-11.48 4.17"/><polyline points="13 1 13 4.5 9.5 4.5"/><polyline points="3 15 3 11.5 6.5 11.5"/></svg></button>
+      <button class="btn-icon" id="menuBtn" title="Menu"><svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="14" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></svg></button>
     </div>
   </div>
+</div>
+
+<!-- Menu dropdown -->
+<div class="menu-overlay" id="menuOverlay"></div>
+<div class="menu-dropdown" id="menuDropdown">
+  <a class="menu-item" href="https://fifaticketscout.com" target="_blank">Home</a>
+  <a class="menu-item menu-active" href="#">Radar</a>
+  <button class="menu-item" id="menuLogout">Log out</button>
 </div>
 
 <div class="ptr-indicator" id="ptrIndicator">Release to refresh</div>
@@ -501,10 +518,15 @@ $('refreshBtn').addEventListener('click',()=>{
   const k=localStorage.getItem(LS_KEY);if(!k)return;
   $('refreshBtn').classList.add('spinning');fetchDrops(k).finally(()=>$('refreshBtn').classList.remove('spinning'));
 });
-$('logoutBtn').addEventListener('click',()=>{
+// Menu
+$('menuBtn').addEventListener('click',e=>{e.stopPropagation();$('menuDropdown').classList.toggle('open');$('menuOverlay').classList.toggle('open')});
+$('menuOverlay').addEventListener('click',()=>{$('menuDropdown').classList.remove('open');$('menuOverlay').classList.remove('open')});
+function doLogout(){
   localStorage.removeItem(LS_KEY);$('mainView').style.display='none';$('headerRight').style.display='none';
   $('loginView').style.display='';$('keyInput').value='';if(timerInterval)clearInterval(timerInterval);
-});
+  $('menuDropdown').classList.remove('open');$('menuOverlay').classList.remove('open');
+}
+$('menuLogout').addEventListener('click',doLogout);
 
 // Pull-to-refresh (mobile)
 let ptrStartY=0,ptrActive=false;
