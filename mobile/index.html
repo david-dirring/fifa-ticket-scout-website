@@ -305,7 +305,7 @@ function applyFilters(){
     if(stages.size>0&&!stages.has(getStage(c.match_number)))return false;
     if(countries.size>0&&!countries.has(getCountry(c.city)))return false;
     // Search
-    if(q&&!(c.matchup||'').toLowerCase().includes(q)&&!(c.city||'').toLowerCase().includes(q)&&!getStage(c.match_number).toLowerCase().includes(q)&&!(c.block||'').toLowerCase().includes(q))return false;
+    if(q&&!(c.matchup||'').toLowerCase().includes(q)&&!(c.home_team||'').toLowerCase().includes(q)&&!(c.away_team||'').toLowerCase().includes(q)&&!(c.city||'').toLowerCase().includes(q)&&!getStage(c.match_number).toLowerCase().includes(q)&&!(c.block||'').toLowerCase().includes(q))return false;
     // Type filters
     if(c.drop_type==='new'&&!types.has('New'))return false;
     if(c.drop_type==='reduced'&&!types.has('Drop'))return false;
@@ -380,9 +380,9 @@ function renderRow(c,idx){
   html+=`</div>`; // t-right
   html+=`</div></div>`; // ticket-compact, ticket-row
 
-  // Detail
-  const teams=(c.matchup||'TBD').split(' vs ');
-  const home=teams[0]||'TBD',away=teams.length>1?teams[1]:'';
+  // Detail — use full team names if available
+  const home=c.home_team||c.matchup||'TBD';
+  const away=c.away_team||'';
   html+=`<div class="ticket-detail" id="det-${idx}">`;
   html+=`<div class="td-teams">${esc(home)}${away?' vs '+esc(away):''}</div>`;
   html+=`<div class="td-meta">Match ${c.match_number||'?'} &middot; ${getStage(c.match_number)} &middot; ${esc(c.city||'')} &middot; ${fmtDate(c.match_date)}</div>`;
