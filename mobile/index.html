@@ -379,9 +379,7 @@ function renderRow(c,idx){
   html+=`</div>`;
   html+=`</div></div>`; // ticket-compact, ticket-row
 
-  // Detail — use full team names if available
-  const home=c.home_team||c.matchup||'TBD';
-  const away=c.away_team||'';
+  // Detail — reuse home/away from above
   html+=`<div class="ticket-detail" id="det-${idx}">`;
   html+=`<div class="td-teams">${esc(home)}${away?' vs '+esc(away):''}</div>`;
   html+=`<div class="td-meta">Match ${c.match_number||'?'} &middot; ${getStage(c.match_number)} &middot; ${esc(c.city||'')} &middot; ${fmtDate(c.match_date)}</div>`;
