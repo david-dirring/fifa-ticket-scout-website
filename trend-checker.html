@@ -777,9 +777,10 @@
         </div>
         <div class="field">
             <label>Match</label>
-            <input type="text" data-field="match-search" list="match-list" placeholder="Start typing — France, Atlanta, June 16…" autocomplete="off" required>
-            <div class="field-help">Type a country, city, or date. Pick from the list.</div>
-            <div class="field-error" data-error-for="match-search">Pick a match from the list.</div>
+            <select data-field="match-select" required>
+                <option value="" disabled selected>Pick a match…</option>
+            </select>
+            <div class="field-error" data-error-for="match-select">Pick a match from the list.</div>
         </div>
         <div class="field-row-three">
             <div class="field">
@@ -820,7 +821,6 @@
     </div>
 </template>
 
-<datalist id="match-list"></datalist>
 
 <script>
 // ============================================================
@@ -837,21 +837,44 @@ const MATCHES = [{"n":1,"m":"MEX v RSA","s":"Group A","d":"2026-06-11","c":"Mexi
 const ENDPOINT = "https://submit-inventory-l74rgj5vkq-uc.a.run.app";
 
 // ============================================================
-// MATCH PICKER — populate datalist
+// MATCH PICKER — build native <optgroup> HTML once, reused per lot
+// Native <select> renders as the iOS wheel / Android dropdown — far
+// more reliable on mobile than an <input list> datalist (which iOS
+// truncates above the keyboard).
 // ============================================================
-const dl = document.getElementById("match-list");
-MATCHES.forEach(M => {
-    const opt = document.createElement("option");
-    const dateStr = new Date(M.d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    opt.value = `M${M.n} · ${M.m} · ${M.s} · ${dateStr} · ${M.c}`;
-    opt.dataset.match = M.n;
-    dl.appendChild(opt);
-});
+const STAGE_ORDER = [
+    "Group A","Group B","Group C","Group D","Group E","Group F",
+    "Group G","Group H","Group I","Group J","Group K","Group L",
+    "R32","R16","QF","SF","Bronze","Final",
+];
+function buildMatchOptionsHTML() {
+    const placeholder = '<option value="" disabled selected>Pick a match…</option>';
+    const byStage = new Map();
+    MATCHES.forEach(M => {
+        if (!byStage.has(M.s)) byStage.set(M.s, []);
+        byStage.get(M.s).push(M);
+    });
+    const groups = STAGE_ORDER.filter(s => byStage.has(s)).map(stage => {
+        const opts = byStage.get(stage).map(M => {
+            const dateStr = new Date(M.d + "T12:00:00").toLocaleDateString(
+                "en-US", { month: "short", day: "numeric" }
+            );
+            const label = `${M.m} · ${M.c} · ${dateStr}`;
+            return `<option value="${M.n}">${label}</option>`;
+        }).join("");
+        return `<optgroup label="${stage}">${opts}</optgroup>`;
+    }).join("");
+    return placeholder + groups;
+}
+const MATCH_OPTIONS_HTML = buildMatchOptionsHTML();
 
-function resolveMatchNumber(displayString) {
-    // Extract leading "M{n} " from the picked option value.
-    const m = (displayString || "").match(/^M(\d+)\s*·/);
-    return m ? parseInt(m[1], 10) : null;
+function populateMatchSelect(selectEl) {
+    selectEl.innerHTML = MATCH_OPTIONS_HTML;
+}
+
+function resolveMatchNumber(selectValue) {
+    const n = parseInt(selectValue, 10);
+    return Number.isFinite(n) ? n : null;
 }
 
 // ============================================================
@@ -874,6 +897,8 @@ function renumberLots() {
 function addLot() {
     const clone = lotTemplate.content.cloneNode(true);
     const lotEl = clone.querySelector("[data-lot]");
+    const matchSelect = lotEl.querySelector('[data-field="match-select"]');
+    if (matchSelect) populateMatchSelect(matchSelect);
     lotEl.querySelector("[data-remove]").addEventListener("click", () => {
         lotEl.remove();
         renumberLots();
@@ -934,7 +959,7 @@ function validateAndCollect() {
 
     const lots = [];
     lotsContainer.querySelectorAll("[data-lot]").forEach((lot, idx) => {
-        const matchInput = lot.querySelector('[data-field="match-search"]');
+        const matchInput = lot.querySelector('[data-field="match-select"]');
         const blockInput = lot.querySelector('[data-field="block"]');
         const rowInput = lot.querySelector('[data-field="row"]');
         const seatsInput = lot.querySelector('[data-field="seats"]');
@@ -1053,6 +1078,9 @@ form.addEventListener("submit", async (e) => {
 form.addEventListener("input", (e) => {
     if (e.target.matches("input, select")) setError(e.target, false);
 });
+form.addEventListener("change", (e) => {
+    if (e.target.matches("select")) setError(e.target, false);
+});
 
 // "Submit another" link in success card → re-show form, clear lots, focus first lot's match input
 const submitAnotherLink = document.getElementById("submit-another");
@@ -1071,7 +1099,7 @@ if (submitAnotherLink) {
         // Scroll the form section into view
         form.scrollIntoView({ behavior: "smooth", block: "start" });
         // Focus the first match field
-        const firstMatchInput = lotsContainer.querySelector('[data-field="match-search"]');
+        const firstMatchInput = lotsContainer.querySelector('[data-field="match-select"]');
         if (firstMatchInput) firstMatchInput.focus();
     });
 }
