@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trend Checker — FIFA Ticket Scout</title>
+    <meta name="description" content="Free pricing tool for World Cup 2026 ticket sellers. Tell us your seats — get a personalized listing-price report based on live market data.">
+    <meta property="og:title" content="Trend Checker — Where the market's been. Where to list.">
+    <meta property="og:description" content="Free for World Cup 2026 sellers. Tell us your seats, get back where the market's at, what to ask, and your potential profit — by email in about a minute.">
+    <meta property="og:image" content="https://fifaticketscout.com/fifa-ticket-scout/marquee-1400x560.png">
+    <meta property="og:url" content="https://fifaticketscout.com/trend-checker">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Trend Checker — Where the market's been. Where to list.">
+    <meta name="twitter:description" content="Free pricing tool for World Cup 2026 ticket sellers.">
+    <meta name="twitter:image" content="https://fifaticketscout.com/fifa-ticket-scout/marquee-1400x560.png">
+    <link rel="icon" type="image/png" href="fifa-ticket-scout/icon128.png">
+    <link rel="apple-touch-icon" href="fifa-ticket-scout/icon128.png">
+    <link rel="canonical" href="https://fifaticketscout.com/trend-checker">
+    <meta name="theme-color" content="#1a2332">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --navy: #1a2332;
+            --navy-light: #243044;
+            --slate: #2d3748;
+            --red: #c8102e;
+            --green: #00a651;
+            --green-light: #e6f9ef;
+            --green-dark: #009146;
+            --blue: #3b82f6;
+            --blue-dark: #2563eb;
+            --blue-light: #eff6ff;
+            --gold: #f5a623;
+            --gold-light: #fef7e6;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --border: #e2e8f0;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--slate);
+            line-height: 1.7;
+            background: var(--white);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* SKIP LINK (a11y) */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--navy);
+            color: var(--white);
+            padding: 0.5rem 1rem;
+            z-index: 1000;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 0 0 8px 0;
+        }
+        .skip-link:focus { top: 0; }
+
+        /* WC26 TOP STRIPE */
+        .top-stripe {
+            height: 4px;
+            background: linear-gradient(90deg, var(--red) 0%, var(--red) 33%, var(--green) 33%, var(--green) 66%, var(--navy) 66%, var(--navy) 100%);
+        }
+
+        /* NAV */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+            color: var(--navy);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .logo img { height: 32px; width: auto; }
+        .logo-text { font-size: 1rem; font-weight: 700; color: var(--navy); }
+        nav ul { list-style: none; display: flex; gap: 1.5rem; align-items: center; }
+        nav a {
+            text-decoration: none;
+            color: var(--gray);
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        nav a:hover { color: var(--blue); }
+        nav a.active {
+            color: var(--navy);
+            font-weight: 600;
+            border-bottom: 2px solid var(--green);
+            padding-bottom: 2px;
+        }
+        .nav-cta {
+            background: var(--green);
+            color: var(--white) !important;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .nav-cta:hover { background: var(--green-dark); }
+
+        /* HERO */
+        .hero {
+            background: var(--navy);
+            color: var(--white);
+            padding: 3.5rem 5% 3rem;
+            text-align: center;
+        }
+        .hero-icon {
+            width: 88px;
+            height: 88px;
+            margin-bottom: 1.5rem;
+            border-radius: 20px;
+        }
+        .hero-eyebrow {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--green);
+            text-transform: uppercase;
+            background: rgba(0, 166, 81, 0.12);
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            margin-bottom: 1rem;
+        }
+        .hero h1 {
+            font-size: 2.75rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+        .hero-tagline {
+            font-size: 1.2rem;
+            color: var(--green);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.05rem;
+            color: var(--gray-light);
+            max-width: 580px;
+            margin: 0 auto;
+            line-height: 1.65;
+        }
+
+        /* SECTIONS */
+        .section { padding: 3.5rem 5%; }
+        .section-form { background: var(--light); }
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--green);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+            text-align: center;
+        }
+        .section-sub {
+            color: var(--gray);
+            font-size: 1rem;
+            margin: 0 auto 2.5rem;
+            max-width: 620px;
+            text-align: center;
+        }
+        .section-sub strong {
+            color: var(--slate);
+            font-weight: 700;
+        }
+
+        /* FORM CARD */
+        .form-wrap { max-width: 720px; margin: 0 auto; }
+        .form-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            padding: 2rem 1.75rem;
+        }
+        .form-section-label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--gray);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+        .form-section { margin-bottom: 1.75rem; }
+        .form-section:last-of-type { margin-bottom: 0; }
+
+        /* FIELD */
+        .field { margin-bottom: 1rem; }
+        .field:last-child { margin-bottom: 0; }
+        .field label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--slate);
+            margin-bottom: 0.4rem;
+        }
+        .field input[type="text"],
+        .field input[type="email"],
+        .field input[type="number"],
+        .field select {
+            width: 100%;
+            padding: 0.75rem 0.85rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--slate);
+            background: var(--white);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .field input:focus,
+        .field select:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(0, 166, 81, 0.15);
+        }
+        .field input::placeholder { color: #cbd5e1; font-weight: 400; }
+        .field-help {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 0.35rem;
+            line-height: 1.5;
+        }
+        .field-error {
+            font-size: 0.85rem;
+            color: var(--red);
+            margin-top: 0.4rem;
+            font-weight: 500;
+            display: none;
+        }
+        .field.has-error input,
+        .field.has-error select { border-color: var(--red); }
+        .field.has-error .field-error { display: block; }
+
+        /* FIELD ROWS (multi-column on desktop) */
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+        }
+        .field-row-three {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.5fr;
+            gap: 0.85rem;
+        }
+
+        /* LOT CARDS */
+        .lot {
+            background: var(--light);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .lot-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .lot-num {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--navy);
+            text-transform: uppercase;
+        }
+        .lot-remove {
+            background: transparent;
+            border: none;
+            color: var(--gray);
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+        .lot-remove:hover { color: var(--red); background: rgba(200, 16, 46, 0.08); }
+        .lot-remove[hidden] { display: none; }
+
+        /* ADD LOT BUTTON */
+        .add-lot {
+            display: block;
+            width: 100%;
+            padding: 0.85rem;
+            background: transparent;
+            color: var(--blue);
+            border: 1.5px dashed var(--blue);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            margin-bottom: 1.5rem;
+            transition: all 0.15s;
+        }
+        .add-lot:hover {
+            background: var(--blue-light);
+            border-style: solid;
+        }
+
+        /* SUBMIT BUTTON */
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: var(--green);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .submit-btn:hover:not(:disabled) {
+            background: var(--green-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 166, 81, 0.25);
+        }
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .submit-btn .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+            vertical-align: -2px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* HONEYPOT (anti-spam) */
+        .hp { position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none; }
+
+        /* SUCCESS CARD */
+        .success-card {
+            background: linear-gradient(135deg, var(--green-light) 0%, #ffffff 100%);
+            border: 2px solid var(--green);
+            border-radius: 16px;
+            padding: 2rem 1.75rem;
+            text-align: center;
+            display: none;
+        }
+        .success-card.visible { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .success-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--green);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin: 0 auto 1rem;
+        }
+        .success-card h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 0.75rem;
+        }
+        .success-card p {
+            color: var(--slate);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .success-card p.muted {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+        .success-card .btn-install {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--navy);
+            color: var(--white);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .success-card .btn-install:hover { background: var(--navy-light); }
+
+        /* GLOBAL ERROR BANNER */
+        .form-error {
+            margin-top: 1rem;
+            padding: 0.85rem 1rem;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-left: 4px solid var(--red);
+            border-radius: 8px;
+            color: #991b1b;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            display: none;
+        }
+        .form-error.visible { display: block; }
+        .form-error a {
+            color: var(--red);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        /* INFO STRIP UNDER FORM */
+        .info-strip {
+            max-width: 720px;
+            margin: 1.5rem auto 0;
+            padding: 0 0.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        .info-strip p { margin-bottom: 0.4rem; }
+        .info-strip a { color: var(--gray); text-decoration: underline; }
+        .info-strip a:hover { color: var(--blue); }
+
+        /* SAMPLE REPORTS */
+        .samples-wrap { max-width: 1000px; margin: 0 auto; }
+        .sample-block {
+            margin-top: 2.5rem;
+        }
+        .sample-block:first-of-type {
+            margin-top: 1.25rem;
+        }
+        .sample-step {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            color: var(--green);
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+        }
+        .sample-step-desc {
+            font-size: 1rem;
+            color: var(--slate);
+            line-height: 1.6;
+            margin: 0 auto 1rem;
+            max-width: 720px;
+            text-align: left;
+        }
+        .sample-shot {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .sample-shot:hover {
+            box-shadow: 0 12px 36px rgba(0,0,0,0.14);
+            transform: translateY(-2px);
+        }
+        .sample-shot img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        .sample-cap {
+            padding: 0.7rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray);
+            background: var(--light);
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .sample-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-top: 0.25rem;
+        }
+        .samples-note {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-top: 2rem;
+            line-height: 1.55;
+        }
+
+        /* TRUST BAR (after the form) */
+        .trust {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 2rem 5%;
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        .trust-stat {
+            text-align: center;
+            min-width: 130px;
+        }
+        .trust-stat-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1.2;
+        }
+        .trust-stat-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        /* FOOTER (matches index.html) */
+        footer {
+            background: var(--navy);
+            color: var(--gray-light);
+            text-align: center;
+            padding: 2rem 5%;
+            font-size: 0.85rem;
+        }
+        footer a {
+            color: var(--gray-light);
+            text-decoration: none;
+            margin: 0 0.75rem;
+        }
+        footer a:hover { color: var(--blue); }
+        .footer-links { margin-bottom: 0.5rem; }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .hero { padding: 2.5rem 5% 2.25rem; }
+            .hero-icon { width: 72px; height: 72px; border-radius: 16px; }
+            .hero-tagline { font-size: 1.05rem; }
+            nav ul { gap: 0.85rem; }
+            nav a { font-size: 0.82rem; }
+            .section { padding: 2.5rem 5%; }
+            .form-card { padding: 1.5rem 1.1rem; }
+            /* Name + email and category + price collapse to single column,
+               but block/row/seats stay 3-up because they're tight numeric inputs. */
+            .field-row { grid-template-columns: 1fr; gap: 0.75rem; }
+            .field-row-three { grid-template-columns: 1fr 1fr 1.5fr; gap: 0.6rem; }
+            .section-title { font-size: 1.5rem; }
+            .trust { gap: 1.25rem; padding: 1.5rem 5%; }
+            .trust-stat { flex: 1 1 45%; min-width: 0; }
+            .sample-pair { grid-template-columns: 1fr; gap: 1rem; }
+            .sample-step { font-size: 0.7rem; }
+        }
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.75rem; }
+            .field input, .field select { font-size: 16px; } /* prevents iOS auto-zoom */
+            .trust-stat { flex: 1 1 100%; }
+            /* On narrow screens, collapse nav to logo + Install Free CTA only */
+            nav ul li:not(:last-child) { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<a href="#tc-form" class="skip-link">Skip to form</a>
+
+<div class="top-stripe"></div>
+
+<nav>
+    <a href="/" class="logo">
+        <img src="fifa-ticket-scout/icon128.png" alt="FIFA Ticket Scout">
+        <span class="logo-text">FIFA Ticket Scout</span>
+    </a>
+    <ul>
+        <li><a href="/#features">Features</a></li>
+        <li><a href="/trend-checker" class="active">Trend Checker</a></li>
+        <li><a href="/#pricing">Pricing</a></li>
+        <li><a href="/#install" class="nav-cta">Install Free</a></li>
+    </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-eyebrow">Free · No account needed</div>
+    <h1>Trend Checker</h1>
+    <div class="hero-tagline">Where the market's been. Where to list.</div>
+    <p>Tell us your World Cup 2026 seats and what you paid. We'll email back a personalized pricing report — recommended list price, where the market's trending, and your potential profit — in about a minute.</p>
+</section>
+
+<!-- FORM -->
+<section class="section section-form">
+    <div class="form-wrap">
+
+        <form id="tc-form" class="form-card" novalidate>
+
+            <div class="form-section">
+                <div class="form-section-label">Your details</div>
+                <div class="field-row">
+                    <div class="field">
+                        <label for="seller-name">What's your name?</label>
+                        <input type="text" id="seller-name" name="seller_name" autocomplete="name" autocapitalize="words" placeholder="First and last name" required>
+                        <div class="field-error" data-error-for="seller-name">We need a name so we can address the report.</div>
+                    </div>
+                    <div class="field">
+                        <label for="seller-email">Where should we send it?</label>
+                        <input type="email" id="seller-email" name="to_email" autocomplete="email" inputmode="email" placeholder="e.g. you@gmail.com" required>
+                        <div class="field-error" data-error-for="seller-email">That doesn't look like a valid email.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-label">Your seats</div>
+                <div id="lots-container">
+                    <!-- Lot cards inserted here. First one rendered on load via the template below. -->
+                </div>
+                <button type="button" class="add-lot" id="add-lot-btn">+ Add another lot</button>
+            </div>
+
+            <!-- HONEYPOT -->
+            <div class="hp" aria-hidden="true">
+                <label for="hp-field">Don't fill this in</label>
+                <input type="text" id="hp-field" name="hp_field" tabindex="-1" autocomplete="off">
+            </div>
+
+            <button type="submit" class="submit-btn" id="submit-btn">Get my pricing report</button>
+            <p style="text-align:center;font-size:0.8rem;color:var(--gray);margin-top:0.6rem;line-height:1.5;">
+                Free · No account · Email lands in about a minute
+            </p>
+
+            <div class="form-error" id="form-error" role="status" aria-live="polite"></div>
+
+        </form>
+
+        <div class="success-card" id="success-card" role="status" aria-live="polite">
+            <div class="success-icon">✓</div>
+            <h2>On its way.</h2>
+            <p>Your report is being compiled now. It'll land in <strong id="success-email"></strong> in about a minute.</p>
+            <p class="muted">While you wait — Scout's free Chrome extension does the same thing on the buy side. Spot deals as they happen.</p>
+            <a href="https://chromewebstore.google.com/detail/fifa-ticket-scout/afopejgeljigjifkfeccobckjpoifjmn" target="_blank" rel="noopener noreferrer" class="btn-install">Install the extension →</a>
+            <p class="muted" style="margin-top:1rem;">
+                Got more lots to price? <a href="#" id="submit-another" style="color:var(--blue);font-weight:600;">Submit another →</a>
+            </p>
+        </div>
+
+        <div class="info-strip">
+            <p><strong>Don't see your match?</strong> R32, R16, QF, SF and Final use placeholder names (e.g. "W74 v W77") until the bracket clears.</p>
+        </div>
+
+    </div>
+</section>
+
+<!-- SAMPLE REPORTS -->
+<section class="section">
+    <div class="samples-wrap">
+        <div class="section-label">What you'll get</div>
+        <h2 class="section-title">A real report. Broken down.</h2>
+        <p class="section-sub">A friend of mine <strong>"won"</strong> a bunch of World Cup seats in the FIFA lottery and asked me how to price them. I started looking at the seats, the prices, the trends — and <strong>texted him back a small essay</strong>. Then I figured I could <strong>do the same for any seller, at scale</strong>, with the crowdsourced FIFA data I already had. <strong>So I built it.</strong> Below is what the report would've looked like, if my buddy from Boston was named <strong>Mark Wahlberg</strong>.</p>
+
+        <!-- Top-line overview -->
+        <div class="sample-block">
+            <div class="sample-step">1 · Top-line summary</div>
+            <p class="sample-step-desc">Opens with totals — how many lots, list value, seller net, and (if you provide what you paid) projected profit.</p>
+            <div class="sample-shot">
+                <img src="sample-emails/wahlberg_top.png" alt="Email header showing portfolio summary" loading="lazy">
+            </div>
+        </div>
+
+        <!-- Game 1 -->
+        <div class="sample-block">
+            <div class="sample-step">2 · Game 1 — France v Norway · Group I · Boston</div>
+            <p class="sample-step-desc">Each lot gets its own card. Top: the recommended price (the number you actually enter on FIFA Resale). Bottom: where the money goes + the cheapest comps in your block.</p>
+            <div class="sample-pair">
+                <div class="sample-shot">
+                    <img src="sample-emails/wahlberg_g1_top.png" alt="Game 1 — match header through recommended price" loading="lazy">
+                    <div class="sample-cap">↑ The recommended list price</div>
+                </div>
+                <div class="sample-shot">
+                    <img src="sample-emails/wahlberg_g1_pay.png" alt="Game 1 — money breakdown and cheapest comps" loading="lazy">
+                    <div class="sample-cap">↑ Where the money goes + comps</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game 2 -->
+        <div class="sample-block">
+            <div class="sample-step">3 · Game 2 — Quarterfinal · Boston</div>
+            <p class="sample-step-desc">Same structure for every additional lot. List 5 lots, get 5 cards.</p>
+            <div class="sample-pair">
+                <div class="sample-shot">
+                    <img src="sample-emails/wahlberg_g2_top.png" alt="Game 2 — match header through recommended price" loading="lazy">
+                    <div class="sample-cap">↑ The recommended list price</div>
+                </div>
+                <div class="sample-shot">
+                    <img src="sample-emails/wahlberg_g2_pay.png" alt="Game 2 — money breakdown and cheapest comps" loading="lazy">
+                    <div class="sample-cap">↑ Where the money goes + comps</div>
+                </div>
+            </div>
+        </div>
+
+        <p class="samples-note">Reports are emailed as native HTML so they render the same way on Gmail, Apple Mail, and Outlook. No accounts, no tracking pixels, no follow-up spam.</p>
+    </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust">
+    <div class="trust-stat">
+        <div class="trust-stat-num">104</div>
+        <div class="trust-stat-label">Matches tracked</div>
+    </div>
+    <div class="trust-stat">
+        <div class="trust-stat-num">10K+</div>
+        <div class="trust-stat-label">Scans / day</div>
+    </div>
+    <div class="trust-stat">
+        <div class="trust-stat-num">~60s</div>
+        <div class="trust-stat-label">Email turnaround</div>
+    </div>
+    <div class="trust-stat">
+        <div class="trust-stat-num">$0</div>
+        <div class="trust-stat-label">No paywall</div>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-links">
+        <a href="https://pentupinnovation.com">Pent-Up Innovation</a>
+        <a href="https://pentupinnovation.com/privacy-policy.html">Privacy Policy</a>
+        <a href="https://pentupinnovation.com/terms.html">Terms</a>
+        <a href="https://github.com/david-dirring/fifa-ticket-scout" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+    &copy; 2026 Pent-Up Innovation. FIFA Ticket Scout is not affiliated with FIFA or any official ticketing partner.
+</footer>
+
+<!-- LOT TEMPLATE -->
+<template id="lot-template">
+    <div class="lot" data-lot>
+        <div class="lot-head">
+            <div class="lot-num">Lot <span data-lot-index>1</span></div>
+            <button type="button" class="lot-remove" data-remove hidden>− Remove</button>
+        </div>
+        <div class="field">
+            <label>Match</label>
+            <input type="text" data-field="match-search" list="match-list" placeholder="Start typing — France, Atlanta, June 16…" autocomplete="off" required>
+            <div class="field-help">Type a country, city, or date. Pick from the list.</div>
+            <div class="field-error" data-error-for="match-search">Pick a match from the list.</div>
+        </div>
+        <div class="field-row-three">
+            <div class="field">
+                <label>Block</label>
+                <input type="text" data-field="block" placeholder="e.g. 134" required>
+                <div class="field-error" data-error-for="block">Block is required.</div>
+            </div>
+            <div class="field">
+                <label>Row</label>
+                <input type="text" data-field="row" placeholder="e.g. 17" required>
+                <div class="field-error" data-error-for="row">Row is required.</div>
+            </div>
+            <div class="field">
+                <label>Seats</label>
+                <input type="text" data-field="seats" placeholder="e.g. 14-17 or 5,6,7,8" required>
+                <div class="field-error" data-error-for="seats">List the seat numbers.</div>
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <label>Category</label>
+                <select data-field="category">
+                    <option value="">Auto-detect from your block (recommended)</option>
+                    <option value="1">Cat 1</option>
+                    <option value="2">Cat 2</option>
+                    <option value="3">Cat 3</option>
+                    <option value="4">Cat 4</option>
+                    <option value="other">Other (Supporter, Front, Accessibility…)</option>
+                </select>
+                <div class="field-help">Most blocks map to a single tier — we'll figure it out.</div>
+            </div>
+            <div class="field">
+                <label>What you paid per seat</label>
+                <input type="number" data-field="price-paid" min="0" step="any" inputmode="decimal" placeholder="e.g. $500">
+                <div class="field-help">Leave blank if you bought from FIFA at face value — we'll look it up.</div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<datalist id="match-list"></datalist>
+
+<script>
+// ============================================================
+// MATCH SCHEDULE — baked in for v1 (104 rows). Swap to live
+// Supabase fetch in v2 once the public read-only view is up.
+// ============================================================
+const MATCHES = [{"n":1,"m":"MEX v RSA","s":"Group A","d":"2026-06-11","c":"Mexico City"},{"n":2,"m":"KOR v CZE","s":"Group A","d":"2026-06-11","c":"Guadalajara"},{"n":3,"m":"CAN v BIH","s":"Group B","d":"2026-06-12","c":"Toronto"},{"n":4,"m":"USA v PAR","s":"Group D","d":"2026-06-12","c":"Los Angeles"},{"n":5,"m":"SCO v HAI","s":"Group C","d":"2026-06-13","c":"Boston"},{"n":6,"m":"AUS v TUR","s":"Group D","d":"2026-06-13","c":"Vancouver"},{"n":7,"m":"BRA v MAR","s":"Group C","d":"2026-06-13","c":"NY / NJ"},{"n":8,"m":"SUI v QAT","s":"Group B","d":"2026-06-13","c":"San Francisco"},{"n":9,"m":"CIV v ECU","s":"Group E","d":"2026-06-14","c":"Philadelphia"},{"n":10,"m":"GER v CUW","s":"Group E","d":"2026-06-14","c":"Houston"},{"n":11,"m":"NED v JPN","s":"Group F","d":"2026-06-14","c":"Dallas"},{"n":12,"m":"SWE v TUN","s":"Group F","d":"2026-06-14","c":"Monterrey"},{"n":13,"m":"URU v KSA","s":"Group H","d":"2026-06-15","c":"Miami"},{"n":14,"m":"ESP v CPV","s":"Group H","d":"2026-06-15","c":"Atlanta"},{"n":15,"m":"IRN v NZL","s":"Group G","d":"2026-06-15","c":"Los Angeles"},{"n":16,"m":"BEL v EGY","s":"Group G","d":"2026-06-15","c":"Seattle"},{"n":17,"m":"FRA v SEN","s":"Group I","d":"2026-06-16","c":"NY / NJ"},{"n":18,"m":"NOR v IRQ","s":"Group I","d":"2026-06-16","c":"Boston"},{"n":19,"m":"ARG v ALG","s":"Group J","d":"2026-06-16","c":"Kansas City"},{"n":20,"m":"AUT v JOR","s":"Group J","d":"2026-06-16","c":"San Francisco"},{"n":21,"m":"PAN v GHA","s":"Group L","d":"2026-06-17","c":"Toronto"},{"n":22,"m":"ENG v CRO","s":"Group L","d":"2026-06-17","c":"Dallas"},{"n":23,"m":"POR v COD","s":"Group K","d":"2026-06-17","c":"Houston"},{"n":24,"m":"COL v UZB","s":"Group K","d":"2026-06-17","c":"Mexico City"},{"n":25,"m":"RSA v CZE","s":"Group A","d":"2026-06-18","c":"Atlanta"},{"n":26,"m":"SUI v BIH","s":"Group B","d":"2026-06-18","c":"Los Angeles"},{"n":27,"m":"CAN v QAT","s":"Group B","d":"2026-06-18","c":"Vancouver"},{"n":28,"m":"MEX v KOR","s":"Group A","d":"2026-06-18","c":"Guadalajara"},{"n":29,"m":"BRA v HAI","s":"Group C","d":"2026-06-19","c":"Philadelphia"},{"n":30,"m":"MAR v SCO","s":"Group C","d":"2026-06-19","c":"Boston"},{"n":31,"m":"PAR v TUR","s":"Group D","d":"2026-06-19","c":"San Francisco"},{"n":32,"m":"USA v AUS","s":"Group D","d":"2026-06-19","c":"Seattle"},{"n":33,"m":"GER v CIV","s":"Group E","d":"2026-06-20","c":"Toronto"},{"n":34,"m":"ECU v CUW","s":"Group E","d":"2026-06-20","c":"Kansas City"},{"n":35,"m":"NED v SWE","s":"Group F","d":"2026-06-20","c":"Houston"},{"n":36,"m":"JPN v TUN","s":"Group F","d":"2026-06-20","c":"Monterrey"},{"n":37,"m":"URU v CPV","s":"Group H","d":"2026-06-21","c":"Miami"},{"n":38,"m":"ESP v KSA","s":"Group H","d":"2026-06-21","c":"Atlanta"},{"n":39,"m":"BEL v IRN","s":"Group G","d":"2026-06-21","c":"Los Angeles"},{"n":40,"m":"EGY v NZL","s":"Group G","d":"2026-06-21","c":"Vancouver"},{"n":41,"m":"SEN v NOR","s":"Group I","d":"2026-06-22","c":"NY / NJ"},{"n":42,"m":"FRA v IRQ","s":"Group I","d":"2026-06-22","c":"Philadelphia"},{"n":43,"m":"ARG v AUT","s":"Group J","d":"2026-06-22","c":"Dallas"},{"n":44,"m":"ALG v JOR","s":"Group J","d":"2026-06-22","c":"San Francisco"},{"n":45,"m":"ENG v GHA","s":"Group L","d":"2026-06-23","c":"Boston"},{"n":46,"m":"CRO v PAN","s":"Group L","d":"2026-06-23","c":"Toronto"},{"n":47,"m":"POR v UZB","s":"Group K","d":"2026-06-23","c":"Houston"},{"n":48,"m":"COL v COD","s":"Group K","d":"2026-06-23","c":"Guadalajara"},{"n":49,"m":"BRA v SCO","s":"Group C","d":"2026-06-24","c":"Miami"},{"n":50,"m":"MAR v HAI","s":"Group C","d":"2026-06-24","c":"Atlanta"},{"n":51,"m":"CAN v SUI","s":"Group B","d":"2026-06-24","c":"Vancouver"},{"n":52,"m":"QAT v BIH","s":"Group B","d":"2026-06-24","c":"Seattle"},{"n":53,"m":"MEX v CZE","s":"Group A","d":"2026-06-24","c":"Mexico City"},{"n":54,"m":"RSA v KOR","s":"Group A","d":"2026-06-24","c":"Monterrey"},{"n":55,"m":"CIV v CUW","s":"Group E","d":"2026-06-25","c":"Philadelphia"},{"n":56,"m":"GER v ECU","s":"Group E","d":"2026-06-25","c":"NY / NJ"},{"n":57,"m":"JPN v SWE","s":"Group F","d":"2026-06-25","c":"Dallas"},{"n":58,"m":"NED v TUN","s":"Group F","d":"2026-06-25","c":"Kansas City"},{"n":59,"m":"USA v TUR","s":"Group D","d":"2026-06-25","c":"Los Angeles"},{"n":60,"m":"AUS v PAR","s":"Group D","d":"2026-06-25","c":"San Francisco"},{"n":61,"m":"FRA v NOR","s":"Group I","d":"2026-06-26","c":"Boston"},{"n":62,"m":"SEN v IRQ","s":"Group I","d":"2026-06-26","c":"Toronto"},{"n":63,"m":"IRN v EGY","s":"Group G","d":"2026-06-26","c":"Seattle"},{"n":64,"m":"BEL v NZL","s":"Group G","d":"2026-06-26","c":"Vancouver"},{"n":65,"m":"KSA v CPV","s":"Group H","d":"2026-06-26","c":"Houston"},{"n":66,"m":"ESP v URU","s":"Group H","d":"2026-06-26","c":"Guadalajara"},{"n":67,"m":"ENG v PAN","s":"Group L","d":"2026-06-27","c":"NY / NJ"},{"n":68,"m":"CRO v GHA","s":"Group L","d":"2026-06-27","c":"Philadelphia"},{"n":69,"m":"AUT v ALG","s":"Group J","d":"2026-06-27","c":"Kansas City"},{"n":70,"m":"ARG v JOR","s":"Group J","d":"2026-06-27","c":"Dallas"},{"n":71,"m":"POR v COL","s":"Group K","d":"2026-06-27","c":"Miami"},{"n":72,"m":"UZB v COD","s":"Group K","d":"2026-06-27","c":"Atlanta"},{"n":73,"m":"2A v 2B","s":"R32","d":"2026-06-28","c":"Los Angeles"},{"n":74,"m":"1E v 3ABCDF","s":"R32","d":"2026-06-29","c":"Boston"},{"n":75,"m":"1F v 2C","s":"R32","d":"2026-06-29","c":"Monterrey"},{"n":76,"m":"1C v 2F","s":"R32","d":"2026-06-29","c":"Houston"},{"n":77,"m":"1I v 3CDFGH","s":"R32","d":"2026-06-30","c":"NY / NJ"},{"n":78,"m":"2E v 2I","s":"R32","d":"2026-06-30","c":"Dallas"},{"n":79,"m":"1A v 3CEFHI","s":"R32","d":"2026-06-30","c":"Mexico City"},{"n":80,"m":"1L v 3EHIJK","s":"R32","d":"2026-07-01","c":"Atlanta"},{"n":81,"m":"1D v 3BEFIJ","s":"R32","d":"2026-07-01","c":"San Francisco"},{"n":82,"m":"1G v 3AEHIJ","s":"R32","d":"2026-07-01","c":"Seattle"},{"n":83,"m":"2K v 2L","s":"R32","d":"2026-07-02","c":"Toronto"},{"n":84,"m":"1H v 2J","s":"R32","d":"2026-07-02","c":"Los Angeles"},{"n":85,"m":"1B v 3EFGIJ","s":"R32","d":"2026-07-02","c":"Vancouver"},{"n":86,"m":"1J v 2H","s":"R32","d":"2026-07-03","c":"Miami"},{"n":87,"m":"1K v 3DEIJL","s":"R32","d":"2026-07-03","c":"Kansas City"},{"n":88,"m":"2D v 2G","s":"R32","d":"2026-07-03","c":"Dallas"},{"n":89,"m":"W74 v W77","s":"R16","d":"2026-07-04","c":"Philadelphia"},{"n":90,"m":"W73 v W75","s":"R16","d":"2026-07-04","c":"Houston"},{"n":91,"m":"W76 v W78","s":"R16","d":"2026-07-05","c":"NY / NJ"},{"n":92,"m":"W79 v W80","s":"R16","d":"2026-07-05","c":"Mexico City"},{"n":93,"m":"W83 v W84","s":"R16","d":"2026-07-06","c":"Dallas"},{"n":94,"m":"W81 v W82","s":"R16","d":"2026-07-06","c":"Seattle"},{"n":95,"m":"W86 v W88","s":"R16","d":"2026-07-07","c":"Atlanta"},{"n":96,"m":"W85 v W87","s":"R16","d":"2026-07-07","c":"Vancouver"},{"n":97,"m":"W89 v W90","s":"QF","d":"2026-07-09","c":"Boston"},{"n":98,"m":"W93 v W94","s":"QF","d":"2026-07-10","c":"Los Angeles"},{"n":99,"m":"W91 v W92","s":"QF","d":"2026-07-11","c":"Miami"},{"n":100,"m":"W95 v W96","s":"QF","d":"2026-07-11","c":"Kansas City"},{"n":101,"m":"W97 v W98","s":"SF","d":"2026-07-14","c":"Dallas"},{"n":102,"m":"W99 v W100","s":"SF","d":"2026-07-15","c":"Atlanta"},{"n":103,"m":"L101 v L102","s":"Bronze","d":"2026-07-18","c":"Miami"},{"n":104,"m":"W101 v W102","s":"Final","d":"2026-07-19","c":"NY / NJ"}];
+
+// ============================================================
+// CLOUD FUNCTION ENDPOINT — Trend Checker submit_inventory
+// Project: fifa-ticket-scout-trendchecker · Region: us-central1
+// To re-deploy: cd ~/git_repos/fifa-ticket-scout-trendchecker && ./deploy.sh
+// ============================================================
+const ENDPOINT = "https://submit-inventory-l74rgj5vkq-uc.a.run.app";
+
+// ============================================================
+// MATCH PICKER — populate datalist
+// ============================================================
+const dl = document.getElementById("match-list");
+MATCHES.forEach(M => {
+    const opt = document.createElement("option");
+    const dateStr = new Date(M.d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    opt.value = `M${M.n} · ${M.m} · ${M.s} · ${dateStr} · ${M.c}`;
+    opt.dataset.match = M.n;
+    dl.appendChild(opt);
+});
+
+function resolveMatchNumber(displayString) {
+    // Extract leading "M{n} " from the picked option value.
+    const m = (displayString || "").match(/^M(\d+)\s*·/);
+    return m ? parseInt(m[1], 10) : null;
+}
+
+// ============================================================
+// LOT MANAGEMENT
+// ============================================================
+const lotsContainer = document.getElementById("lots-container");
+const lotTemplate = document.getElementById("lot-template");
+const addLotBtn = document.getElementById("add-lot-btn");
+
+function renumberLots() {
+    const lots = lotsContainer.querySelectorAll("[data-lot]");
+    lots.forEach((lot, i) => {
+        lot.querySelector("[data-lot-index]").textContent = i + 1;
+        const removeBtn = lot.querySelector("[data-remove]");
+        if (lots.length > 1) removeBtn.removeAttribute("hidden");
+        else removeBtn.setAttribute("hidden", "");
+    });
+}
+
+function addLot() {
+    const clone = lotTemplate.content.cloneNode(true);
+    const lotEl = clone.querySelector("[data-lot]");
+    lotEl.querySelector("[data-remove]").addEventListener("click", () => {
+        lotEl.remove();
+        renumberLots();
+    });
+    lotsContainer.appendChild(clone);
+    renumberLots();
+}
+
+addLotBtn.addEventListener("click", addLot);
+addLot(); // start with one
+
+// ============================================================
+// SEAT PARSER — accepts "5-8" or "5,6,7,8" or "5, 6, 7-9"
+// ============================================================
+function parseSeats(raw) {
+    if (!raw || !raw.trim()) return null;
+    const tokens = raw.trim().split(/[,\s]+/).filter(Boolean);
+    const seats = [];
+    for (const t of tokens) {
+        const m = t.match(/^(\d+)\s*-\s*(\d+)$/);
+        if (m) {
+            const a = parseInt(m[1], 10), b = parseInt(m[2], 10);
+            if (a <= b && b - a < 50) {
+                for (let i = a; i <= b; i++) seats.push(String(i));
+            } else return null;
+        } else if (/^\w+$/.test(t)) {
+            seats.push(t);
+        } else return null;
+    }
+    return seats.length ? seats : null;
+}
+
+// ============================================================
+// VALIDATION
+// ============================================================
+function setError(input, hasError) {
+    const field = input.closest(".field");
+    if (!field) return;
+    field.classList.toggle("has-error", !!hasError);
+    if (hasError) input.setAttribute("aria-invalid", "true");
+    else input.removeAttribute("aria-invalid");
+}
+
+function validEmail(s) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((s || "").trim());
+}
+
+function validateAndCollect() {
+    const errors = [];
+    const nameInput = document.getElementById("seller-name");
+    const emailInput = document.getElementById("seller-email");
+    const seller_name = nameInput.value.trim();
+    const to_email = emailInput.value.trim();
+    setError(nameInput, !seller_name);
+    setError(emailInput, !validEmail(to_email));
+    if (!seller_name) errors.push("name");
+    if (!validEmail(to_email)) errors.push("email");
+
+    const lots = [];
+    lotsContainer.querySelectorAll("[data-lot]").forEach((lot, idx) => {
+        const matchInput = lot.querySelector('[data-field="match-search"]');
+        const blockInput = lot.querySelector('[data-field="block"]');
+        const rowInput = lot.querySelector('[data-field="row"]');
+        const seatsInput = lot.querySelector('[data-field="seats"]');
+        const categorySelect = lot.querySelector('[data-field="category"]');
+        const priceInput = lot.querySelector('[data-field="price-paid"]');
+
+        const matchNumber = resolveMatchNumber(matchInput.value);
+        const block = blockInput.value.trim();
+        const row = rowInput.value.trim();
+        const seats = parseSeats(seatsInput.value);
+        const category = categorySelect.value;
+        const priceRaw = priceInput.value.trim();
+        const pricePaid = priceRaw === "" ? null : parseFloat(priceRaw);
+
+        setError(matchInput, !matchNumber);
+        setError(blockInput, !block);
+        setError(rowInput, !row);
+        setError(seatsInput, !seats);
+
+        if (!matchNumber) errors.push(`lot ${idx+1} match`);
+        if (!block) errors.push(`lot ${idx+1} block`);
+        if (!row) errors.push(`lot ${idx+1} row`);
+        if (!seats) errors.push(`lot ${idx+1} seats`);
+
+        // Look up the picked match's metadata for display fields the email uses
+        const meta = MATCHES.find(M => M.n === matchNumber);
+        const lotPayload = {
+            match: matchNumber,
+            block: block,
+            row: row,
+            seats: seats || [],
+        };
+        // Only send category if the user explicitly picked one. Empty value
+        // means "auto-detect" — the backend looks up the dominant tier for
+        // (match, block) from scan_snapshots.
+        if (category) lotPayload.category = category;
+        if (pricePaid !== null && !isNaN(pricePaid) && pricePaid >= 0) {
+            lotPayload.price_paid = pricePaid;
+        }
+        if (meta) {
+            lotPayload.label = meta.m;
+            lotPayload.stage = meta.s;
+            lotPayload.date = meta.d;
+            lotPayload.venue = meta.c;
+        }
+        lots.push(lotPayload);
+    });
+
+    if (errors.length) return { ok: false, errors };
+
+    return {
+        ok: true,
+        payload: {
+            seller_name,
+            to_email,
+            subject_suffix: lots.length === 1 && lots[0].label
+                ? `${lots[0].venue || ""} · ${lots[0].label}`.replace(/^\s*·\s*/, "")
+                : `${lots.length} lots`,
+            lots,
+            hp_field: document.getElementById("hp-field").value
+        }
+    };
+}
+
+// ============================================================
+// FORM SUBMIT
+// ============================================================
+const form = document.getElementById("tc-form");
+const submitBtn = document.getElementById("submit-btn");
+const formError = document.getElementById("form-error");
+const successCard = document.getElementById("success-card");
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    formError.classList.remove("visible");
+
+    const result = validateAndCollect();
+    if (!result.ok) {
+        formError.innerHTML = "Please fix the highlighted fields.";
+        formError.classList.add("visible");
+        const firstErr = form.querySelector(".has-error input, .has-error select");
+        if (firstErr) {
+            firstErr.scrollIntoView({ behavior: "smooth", block: "center" });
+            firstErr.focus({ preventScroll: true });
+        }
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span>Sending…';
+
+    try {
+        const resp = await fetch(ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(result.payload)
+        });
+        if (!resp.ok) {
+            const errBody = await resp.json().catch(() => ({ error: "Server error" }));
+            throw new Error(errBody.error || `HTTP ${resp.status}`);
+        }
+        // Success — replace form with success card
+        document.getElementById("success-email").textContent = result.payload.to_email;
+        form.style.display = "none";
+        successCard.classList.add("visible");
+        successCard.scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Get my pricing report";
+        formError.innerHTML = `We couldn't send the report — ${err.message}. <a href="mailto:david@pentupinnovation.com">Email David</a> if this keeps happening.`;
+        formError.classList.add("visible");
+    }
+});
+
+// Field-level live error clearing on input
+form.addEventListener("input", (e) => {
+    if (e.target.matches("input, select")) setError(e.target, false);
+});
+
+// "Submit another" link in success card → re-show form, clear lots, focus first lot's match input
+const submitAnotherLink = document.getElementById("submit-another");
+if (submitAnotherLink) {
+    submitAnotherLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        successCard.classList.remove("visible");
+        form.style.display = "";
+        // Clear the existing lots and re-add a fresh one
+        lotsContainer.innerHTML = "";
+        addLot();
+        // Reset submit button + form-error
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Get my pricing report";
+        formError.classList.remove("visible");
+        // Scroll the form section into view
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Focus the first match field
+        const firstMatchInput = lotsContainer.querySelector('[data-field="match-search"]');
+        if (firstMatchInput) firstMatchInput.focus();
+    });
+}
+</script>
+
+</body>
+</html>
