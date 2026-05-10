@@ -837,34 +837,24 @@ const MATCHES = [{"n":1,"m":"MEX v RSA","s":"Group A","d":"2026-06-11","c":"Mexi
 const ENDPOINT = "https://submit-inventory-l74rgj5vkq-uc.a.run.app";
 
 // ============================================================
-// MATCH PICKER — build native <optgroup> HTML once, reused per lot
+// MATCH PICKER — build native <select> HTML once, reused per lot.
 // Native <select> renders as the iOS wheel / Android dropdown — far
 // more reliable on mobile than an <input list> datalist (which iOS
-// truncates above the keyboard).
+// truncates above the keyboard). Listed in match-number order so
+// sellers find their match by the printed M# on the ticket.
 // ============================================================
-const STAGE_ORDER = [
-    "Group A","Group B","Group C","Group D","Group E","Group F",
-    "Group G","Group H","Group I","Group J","Group K","Group L",
-    "R32","R16","QF","SF","Bronze","Final",
-];
 function buildMatchOptionsHTML() {
     const placeholder = '<option value="" disabled selected>Pick a match…</option>';
-    const byStage = new Map();
-    MATCHES.forEach(M => {
-        if (!byStage.has(M.s)) byStage.set(M.s, []);
-        byStage.get(M.s).push(M);
-    });
-    const groups = STAGE_ORDER.filter(s => byStage.has(s)).map(stage => {
-        const opts = byStage.get(stage).map(M => {
+    const opts = [...MATCHES]
+        .sort((a, b) => a.n - b.n)
+        .map(M => {
             const dateStr = new Date(M.d + "T12:00:00").toLocaleDateString(
                 "en-US", { month: "short", day: "numeric" }
             );
-            const label = `${M.m} · ${M.c} · ${dateStr}`;
+            const label = `M${M.n} · ${M.m} · ${M.c} · ${dateStr}`;
             return `<option value="${M.n}">${label}</option>`;
         }).join("");
-        return `<optgroup label="${stage}">${opts}</optgroup>`;
-    }).join("");
-    return placeholder + groups;
+    return placeholder + opts;
 }
 const MATCH_OPTIONS_HTML = buildMatchOptionsHTML();
 
