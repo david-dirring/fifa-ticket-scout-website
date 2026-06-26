@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>LMS Drops Explorer — FIFA Ticket Scout</title>
+<link rel="icon" href="fifa-ticket-scout/icon128.png">
+<style>
+:root{
+  --navy:#1a2332; --slate:#2d3748; --red:#c8102e; --green:#00a651; --green-dark:#009146;
+  --gold:#f5a623; --gray:#64748b; --gray-light:#94a3b8; --border:#e2e8f0; --band:#eef2f6;
+  --light:#f8fafc; --white:#fff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--white);color:var(--navy);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px}
+.stripe{height:4px;background:linear-gradient(90deg,#c8102e 0,#c8102e 33%,#00a651 33%,#00a651 66%,#1a2332 66%,#1a2332 100%)}
+header{padding:16px 20px 10px;display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+header img{height:34px;width:34px;border-radius:7px}
+header .name{font-size:17px;font-weight:800}
+header .sp{flex:1}
+header a.home{color:var(--gray);text-decoration:none;font-weight:600;font-size:13px}
+h1{font-size:22px;margin:2px 20px;font-weight:800;letter-spacing:-.3px}
+.bar{height:4px;width:58px;background:linear-gradient(90deg,var(--red),var(--gold),var(--green-dark));border-radius:3px;margin:0 20px 6px}
+.sub{color:var(--gray);font-size:13px;margin:0 20px 4px;max-width:900px;line-height:1.5}
+.refreshed{color:var(--gray);font-size:12px;margin:0 20px 12px}
+.refreshed b{color:var(--green-dark)}
+.disc{margin:0 20px 14px;color:var(--gray);font-size:12px;background:var(--light);border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:8px;padding:9px 12px;max-width:900px;line-height:1.5}
+.note{margin:0 20px 14px;color:var(--navy);font-size:12.5px;max-width:900px;line-height:1.5}
+.note a{color:var(--green-dark);font-weight:700}
+
+.controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:0 20px 12px}
+.tabs{display:inline-flex;background:var(--band);border-radius:9px;padding:3px}
+.tabs button{border:0;background:transparent;font:inherit;font-weight:700;color:var(--gray);
+  padding:6px 14px;border-radius:7px;cursor:pointer}
+.tabs button.on{background:var(--white);color:var(--navy);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+details.dd{position:relative}
+details.dd>summary{list-style:none;cursor:pointer;border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;font-weight:600;color:var(--navy);background:var(--white);white-space:nowrap}
+details.dd>summary::-webkit-details-marker{display:none}
+details.dd>summary::after{content:' \25BE';color:var(--gray)}
+.panel{position:absolute;z-index:20;margin-top:4px;background:var(--white);border:1px solid var(--border);
+  border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:8px;min-width:200px;max-height:340px;overflow:auto}
+.panel .row{display:flex;align-items:center;gap:7px;padding:3px 5px;border-radius:5px;font-size:13px;white-space:nowrap}
+.panel .row:hover{background:var(--light)}
+.panel .grp{font-weight:800;color:var(--gray);font-size:11px;text-transform:uppercase;padding:7px 5px 2px}
+.panel .allnone{display:flex;gap:6px;padding:2px 4px 6px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.panel .allnone button{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--border);
+  background:var(--white);border-radius:6px;padding:3px 9px;cursor:pointer;color:var(--green-dark)}
+.dates{display:inline-flex;gap:5px;align-items:center;color:var(--gray);font-size:12.5px}
+.dates input{font:inherit;border:1px solid var(--border);border-radius:7px;padding:5px 7px}
+.seg{display:inline-flex;background:var(--band);border-radius:8px;padding:2px}
+.seg button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:var(--gray);padding:5px 10px;border-radius:6px;cursor:pointer}
+.seg button.on{background:var(--white);color:var(--navy);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.reclbl{color:var(--gray);font-size:12px;font-weight:700;margin-left:4px}
+
+#view{overflow:auto;padding:4px 20px 8px}
+table{border-collapse:separate;border-spacing:2px;font-family:'SF Mono',Monaco,'Cascadia Code',monospace}
+th,td{text-align:center;font-size:11px}
+th.h{color:var(--navy);font-weight:800;padding:2px 2px}
+th.grp{color:var(--gray);font-weight:800;font-size:11px;text-transform:uppercase;text-align:left;padding:0 6px 3px}
+th.corner,th.koh,th.rth{color:var(--gray);font-weight:700;text-align:left;padding:0 8px 5px;white-space:nowrap}
+th.rth{text-align:right}
+td{width:34px;height:22px;border-radius:4px;font-weight:700}
+td.lab{text-align:right;color:var(--navy);font-weight:700;padding-right:9px;width:auto;white-space:nowrap;font-size:11px}
+td.g{text-align:left;color:var(--navy);font-weight:700;padding:0 12px 0 8px;width:auto;white-space:nowrap;font-family:-apple-system,sans-serif;font-size:11.5px}
+td.ko{text-align:left;color:var(--gray);font-size:11px;padding:0 12px 0 4px;white-space:nowrap;font-weight:600;border-right:2px solid var(--border)}
+td.ko.partial{color:var(--gray-light);font-style:italic}
+td.rt{color:var(--gray);font-weight:800;padding-left:8px;font-size:10.5px}
+.sep{border-left:2px solid var(--gold)}
+td.pending{background:var(--band);background-image:repeating-linear-gradient(45deg,#cbd5e1 0 3px,transparent 3px 6px)}
+td.tot{color:var(--green-dark);font-weight:800;border-top:2px solid var(--border);padding-top:3px;font-size:10.5px}
+tr.sec td{background:var(--band);height:22px}
+td.sechd{text-align:left;font-family:-apple-system,sans-serif;font-weight:800;color:var(--navy);font-size:12px;padding:0 8px;border-radius:5px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+th.daybrk{border-left:2px solid var(--border)}
+td.daybrk{border-left:2px solid var(--border)}
+
+.legend{margin:8px 20px 20px;color:var(--gray);font-size:12px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.legend .sw{display:inline-flex;gap:6px;align-items:center}
+.sb{width:50px;height:12px;border-radius:3px;background:linear-gradient(90deg,#eef2f6,var(--green-dark),var(--gold));display:inline-block}
+.ph{width:15px;height:13px;border-radius:3px;background:var(--band);background-image:repeating-linear-gradient(45deg,#cbd5e1 0 3px,transparent 3px 6px);display:inline-block}
+.muted{color:var(--gray)}
+#loading{padding:40px 20px;color:var(--gray)}
+.sorth{cursor:pointer}
+@media(max-width:640px){h1,.sub,.bar,.refreshed,.disc,.note,.controls,.legend{margin-left:12px;margin-right:12px}#view{padding-left:12px;padding-right:12px}}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<header>
+  <img src="fifa-ticket-scout/icon128.png" alt="">
+  <span class="name">FIFA Ticket Scout</span>
+  <span class="sp"></span>
+  <a class="home" href="/">&larr; fifaticketscout.com</a>
+</header>
+<h1>Last-Minute-Sale drops explorer</h1>
+<div class="bar"></div>
+<div class="sub">When distinct Last-Minute-Sale seats <b>first appear</b> for World Cup 2026, by time of day, days before kickoff, and recent activity. Each seat counted once.</div>
+<div class="refreshed" id="refreshed"></div>
+<div class="disc"><b>Not from an official FIFA database.</b> Data is scraped from the public ticketing UI and de-duplicated. Treat the numbers as directional, not exact.</div>
+<div class="note">Over 90% of FIFA Ticket Scout users are on the <a href="https://chromewebstore.google.com/detail/fifa-ticket-scout/afopejgeljigjifkfeccobckjpoifjmn" target="_blank" rel="noopener">free Chrome extension</a>. Paid users also get <b>emailed price-drop alerts</b> for the games they pick — <a href="https://daviddirring.gumroad.com/l/gykspl" target="_blank" rel="noopener">available here</a>.</div>
+
+<div class="controls" id="controls" style="display:none">
+  <div class="tabs" id="tabs">
+    <button data-v="matrix" class="on">Matrix</button>
+    <button data-v="games">Games</button>
+    <button data-v="recent">Recent</button>
+  </div>
+  <details class="dd" id="dd-city"><summary id="sum-city">City</summary><div class="panel" id="pan-city"></div></details>
+  <details class="dd" id="dd-stage"><summary id="sum-stage">Stage</summary><div class="panel" id="pan-stage"></div></details>
+  <details class="dd" id="dd-game"><summary id="sum-game">Game</summary><div class="panel" id="pan-game"></div></details>
+  <span class="dates">date <input type="date" id="dmin"> – <input type="date" id="dmax"></span>
+  <span id="recctl" style="display:none">
+    <span class="seg" id="recwin"><button data-w="24">24h</button><button data-w="36" class="on">36h</button><button data-w="48">48h</button><button data-w="72">72h</button></span>
+    <span class="seg" id="recgran"><button data-g="15" class="on">15-min</button><button data-g="60">hourly</button></span>
+  </span>
+</div>
+
+<div id="loading">Loading data…</div>
+<div id="view"></div>
+<div class="legend" id="legend" style="display:none">
+  <span class="sw">fewer <span class="sb"></span> more seats</span>
+  <span class="sw"><span class="ph"></span> window hasn't started yet</span>
+  <span><span class="dot" style="background:var(--green-dark)"></span>group</span>
+  <span><span class="dot" style="background:var(--red)"></span>knockout</span>
+  <span class="muted"><i>italic kickoff</i> = upcoming (still filling)</span>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), now=()=>Date.now();
+const SECTIONS=["Group A","Group B","Group C","Group D","Group E","Group F","Group G","Group H","Group I","Group J","Group K","Group L","Round of 32","Round of 16","Quarterfinals","Semis · Bronze · Final"];
+function sectionOf(st){ if(st.startsWith("Group ")) return st; return {R32:"Round of 32",R16:"Round of 16",QF:"Quarterfinals"}[st]||"Semis · Bronze · Final"; }
+function stageKey(st){ if(st.startsWith("Group ")) return "Group"; return {R32:"R32",R16:"R16",QF:"QF"}[st]||"Finals"; }
+const STAGE_OPTS=[["Group","Group stage"],["R32","Round of 32"],["R16","Round of 16"],["QF","Quarterfinals"],["Finals","Semis · Bronze · Final"]];
+function lerp(a,b,t){return Math.round(a+(b-a)*t)}
+function shade(v,mx){ if(!v) return ["#f1f5f9","#cbd5e1"]; let t=Math.sqrt(Math.min(v,mx)/mx),r,g,b;
+  if(t<0.6){let u=t/0.6; r=lerp(0xe6,0,u);g=lerp(0xf9,0x91,u);b=lerp(0xef,0x46,u);}
+  else{let u=(t-0.6)/0.4; r=lerp(0,0xf5,u);g=lerp(0x91,0xa6,u);b=lerp(0x46,0x23,u);}
+  return ['rgb('+r+','+g+','+b+')', t<0.32?'#15324a':'#fff']; }
+function fmt(v){return !v?'':v>=1000?(v/1000).toFixed(1)+'k':''+v}
+function hlabel(h){return (h%12||12)+(h<12?'a':'p')}
+const ETF=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'});
+function etParts(ms){const p={};ETF.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return p;}
+
+let D, MTA, KO, SEC, midxByN, state;
+
+fetch('data/lms_drops.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{ D=d; init(); })
+  .catch(e=>{ $('#loading').textContent='Could not load data.'; console.error(e); });
+
+function init(){
+  MTA=D.matches;
+  KO=MTA.map(m=>Date.parse(m.ko));
+  SEC=MTA.map(m=>sectionOf(m.stage));
+  midxByN={}; MTA.forEach((m,i)=>midxByN[m.n]=i);
+  // refreshed stamp
+  const g=Date.parse(D.generated_at), mins=Math.round((now()-g)/60000);
+  const ago=mins<60?mins+' min ago':Math.round(mins/60)+' hr ago';
+  $('#refreshed').innerHTML='Last refreshed <b>'+ago+'</b> · '+new Date(g).toLocaleString('en-US',{timeZone:'America/New_York',dateStyle:'medium',timeStyle:'short'})+' ET';
+  // default state
+  const cities=[...new Set(MTA.map(m=>m.city))].sort();
+  const dates=MTA.map(m=>m.ko.slice(0,10));
+  state={ view:'matrix', cities:new Set(cities), stages:new Set(STAGE_OPTS.map(s=>s[0])),
+    games:new Set(MTA.map(m=>m.n)), dmin:dates.reduce((a,b)=>a<b?a:b), dmax:dates.reduce((a,b)=>a>b?a:b),
+    recW:36, recG:15, sort:'kickoff', allCities:cities };
+  readURL();
+  buildCityPanel(); buildStagePanel(); $('#dmin').value=state.dmin; $('#dmax').value=state.dmax;
+  rebuildGamePanel();
+  // events
+  $('#tabs').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.view=b.dataset.v; syncTabs(); writeURL(); render();};
+  $('#dmin').onchange=e=>{state.dmin=e.target.value; onScope();};
+  $('#dmax').onchange=e=>{state.dmax=e.target.value; onScope();};
+  $('#recwin').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recW=+b.dataset.w; segOn('#recwin',b); writeURL(); render();};
+  $('#recgran').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recG=+b.dataset.g; segOn('#recgran',b); writeURL(); render();};
+  $('#loading').style.display='none'; $('#controls').style.display='flex'; $('#legend').style.display='flex';
+  syncTabs(); render();
+}
+
+function syncTabs(){ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===state.view));
+  $('#recctl').style.display = state.view==='recent'?'inline':'none';
+  segOn('#recwin',document.querySelector('#recwin button[data-w="'+state.recW+'"]'));
+  segOn('#recgran',document.querySelector('#recgran button[data-g="'+state.recG+'"]')); }
+function segOn(sel,btn){document.querySelectorAll(sel+' button').forEach(b=>b.classList.toggle('on',b===btn));}
+
+function chkPanel(panel,items,getOn,onToggle,grouped){
+  let h='<div class="allnone"><button data-a="all">All</button><button data-a="none">None</button></div>';
+  if(grouped){ let cur=null; items.forEach(it=>{ if(it.grp!==cur){cur=it.grp; h+='<div class="grp">'+cur+'</div>';}
+    h+='<label class="row"><input type="checkbox" data-k="'+it.k+'"'+(getOn(it.k)?' checked':'')+'>'+it.lbl+'</label>'; }); }
+  else items.forEach(it=>{ h+='<label class="row"><input type="checkbox" data-k="'+it.k+'"'+(getOn(it.k)?' checked':'')+'>'+it.lbl+'</label>'; });
+  panel.innerHTML=h;
+  panel.querySelectorAll('input').forEach(inp=>inp.onchange=()=>onToggle(inp.dataset.k,inp.checked));
+  panel.querySelector('[data-a="all"]').onclick=()=>{panel.querySelectorAll('input').forEach(i=>{i.checked=true;onToggle(i.dataset.k,true,true);}); afterBulk();};
+  panel.querySelector('[data-a="none"]').onclick=()=>{panel.querySelectorAll('input').forEach(i=>{i.checked=false;onToggle(i.dataset.k,false,true);}); afterBulk();};
+}
+let bulkPending=false; function afterBulk(){ bulkPending=false; onScopeFinish(); }
+
+function buildCityPanel(){ chkPanel($('#pan-city'), state.allCities.map(c=>({k:c,lbl:c})),
+  k=>state.cities.has(k), (k,on,bulk)=>{ on?state.cities.add(k):state.cities.delete(k); if(!bulk)onScope(); else bulkPending=true; }); updCitySum(); }
+function buildStagePanel(){ chkPanel($('#pan-stage'), STAGE_OPTS.map(s=>({k:s[0],lbl:s[1]})),
+  k=>state.stages.has(k), (k,on,bulk)=>{ on?state.stages.add(k):state.stages.delete(k); if(!bulk)onScope(); else bulkPending=true; }); updStageSum(); }
+function rebuildGamePanel(){
+  const inScope=MTA.filter(m=>scopeNoGame(m));
+  const items=inScope.map(m=>({grp:sectionOf(m.stage),k:m.n,lbl:'#'+m.n+' '+m.m}));
+  // keep only in-scope games selected
+  state.games=new Set(inScope.filter(m=>state.games.has(m.n)).map(m=>m.n));
+  if(state.games.size===0) inScope.forEach(m=>state.games.add(m.n));
+  chkPanel($('#pan-game'), items, k=>state.games.has(+k), (k,on,bulk)=>{ k=+k; on?state.games.add(k):state.games.delete(k); if(!bulk){writeURL();render();updGameSum();} else bulkPending=true; }, true);
+  updGameSum();
+}
+function onScope(){ buildCityPanel(); buildStagePanel(); rebuildGamePanel(); writeURL(); render(); }
+function onScopeFinish(){ buildCityPanel(); buildStagePanel(); rebuildGamePanel(); writeURL(); render(); }
+function updCitySum(){ $('#sum-city').textContent='City ('+state.cities.size+'/'+state.allCities.length+')'; }
+function updStageSum(){ $('#sum-stage').textContent='Stage ('+state.stages.size+'/'+STAGE_OPTS.length+')'; }
+function updGameSum(){ const tot=MTA.filter(scopeNoGame).length; $('#sum-game').textContent='Game ('+state.games.size+'/'+tot+')'; }
+
+function scopeNoGame(m){ const d=m.ko.slice(0,10);
+  return state.cities.has(m.city) && state.stages.has(stageKey(m.stage)) && d>=state.dmin && d<=state.dmax; }
+function effSet(){ const s=new Set(); MTA.forEach((m,i)=>{ if(scopeNoGame(m)&&state.games.has(m.n)) s.add(i); }); return s; }
+
+function render(){
+  const eff=effSet();
+  if(state.view==='matrix') renderMatrix(eff);
+  else if(state.view==='games') renderGames(eff);
+  else renderRecent(eff);
+}
+
+function renderMatrix(eff){
+  const NB=D.buckets.length, grid=Array.from({length:24},()=>new Array(NB).fill(0));
+  for(const [mi,hod,bi,ci,n] of D.cells) if(eff.has(mi)) grid[hod][bi]+=n;
+  let mx=1; for(const r of grid) for(const v of r) if(v>mx)mx=v;
+  const effA=[...eff], t=now();
+  const pend=D.bucket_hi_hours.map(hi=>!effA.some(mi=>KO[mi]-hi*3600000<=t));
+  const sepIdx=D.buckets.indexOf('2');
+  let nh=4, nd=NB-4;
+  let h='<table><tr><th class="corner"></th><th class="grp" colspan="'+nh+'">&larr; HOURS before kickoff</th><th class="grp sep" colspan="'+nd+'">DAYS before kickoff &rarr;</th><th></th></tr>';
+  h+='<tr><th class="corner">ET hr</th>'+D.buckets.map((b,i)=>'<th class="h'+(i===sepIdx?' sep':'')+'">'+b+'</th>').join('')+'<th class="rth">&Sigma;</th></tr>';
+  for(let hod=0;hod<24;hod++){ let rt=0;
+    h+='<tr><td class="lab">'+hlabel(hod)+'</td>';
+    for(let bi=0;bi<NB;bi++){ const sep=bi===sepIdx?'sep ':''; const v=grid[hod][bi]; rt+=v;
+      if(pend[bi]){ h+='<td class="'+sep+'pending"></td>'; continue; }
+      const [bg,fg]=shade(v,mx); h+='<td class="'+sep.trim()+'" style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
+    h+='<td class="rt">'+fmt(rt)+'</td></tr>'; }
+  let col=D.buckets.map((b,bi)=>{let s=0;for(let hod=0;hod<24;hod++)s+=grid[hod][bi];return s;});
+  let grand=col.reduce((a,b)=>a+b,0);
+  h+='<tr><td class="lab">&Sigma;</td>'+col.map((s,bi)=>'<td class="tot'+(bi===sepIdx?' sep':'')+'">'+fmt(s)+'</td>').join('')+'<td class="rt">'+fmt(grand)+'</td></tr>';
+  h+='</table>'; $('#view').innerHTML=h;
+}
+
+function renderGames(eff){
+  const NB=D.buckets.length, g={};
+  for(const mi of eff) g[mi]=new Array(NB).fill(0);
+  for(const [mi,hod,bi,ci,n] of D.cells) if(eff.has(mi)) g[mi][bi]+=n;
+  let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
+  const sepIdx=D.buckets.indexOf('2'), t=now();
+  let h='<table><tr><th class="corner">Match</th><th class="koh">Kickoff (ET)</th>'+D.buckets.map((b,i)=>'<th class="h'+(i===sepIdx?' sep':'')+'">'+b+'</th>').join('')+'</tr>';
+  for(const sec of SECTIONS){
+    let rows=[...eff].filter(mi=>SEC[mi]===sec); if(!rows.length) continue;
+    rows.sort((a,b)=>KO[a]-KO[b]);
+    const ko=sec.startsWith("Group ")?'var(--green-dark)':'var(--red)';
+    let stot=0; for(const mi of rows) stot+=g[mi].reduce((a,b)=>a+b,0);
+    h+='<tr class="sec"><td class="sechd" colspan="2"><span class="dot" style="background:'+ko+'"></span>'+sec+'</td><td class="sechd" colspan="'+NB+'" style="text-align:right;color:var(--gray)">'+fmt(stot)+' seats</td></tr>';
+    for(const mi of rows){ const m=MTA[mi], partial=KO[mi]>t;
+      h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko'+(partial?' partial':'')+'">'+koLabel(m.ko)+'</td>';
+      for(let bi=0;bi<NB;bi++){ const sep=bi===sepIdx?'sep ':'';
+        if(KO[mi]-D.bucket_hi_hours[bi]*3600000>t){ h+='<td class="'+sep+'pending"></td>'; continue; }
+        const v=g[mi][bi]; const [bg,fg]=shade(v,mx); h+='<td class="'+sep.trim()+'" style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
+      h+='</tr>'; }
+  }
+  h+='</table>'; $('#view').innerHTML=h;
+}
+function koLabel(iso){const p=etParts(Date.parse(iso));
+  return p.month+'/'+p.day+' '+p.hour+(p.minute==='00'?'':':'+p.minute)+(p.dayPeriod||'').toLowerCase()+' ET';}
+
+function renderRecent(eff){
+  const SLOTS=D.recent_slots, start=Date.parse(D.recent_start), W=state.recW, gran=state.recG;
+  const firstSlot=Math.max(0, SLOTS - W*4);                 // 4 fifteen-min slots / hour
+  const per = gran/15;                                       // 15->1, 60->4 slots per column
+  const ncol=Math.ceil((SLOTS-firstSlot)/per);
+  // aggregate
+  const g={}; const has=new Set();
+  for(const [mi,slot,ci,n] of D.recent){ if(!eff.has(mi)||slot<firstSlot) continue;
+    const col=Math.floor((slot-firstSlot)/per); (g[mi]||(g[mi]=new Array(ncol).fill(0)))[col]+=n; has.add(mi); }
+  let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
+  // column time labels + day breaks
+  const colMs=i=>start+(firstSlot+i*per)*15*60000;
+  let head='<th class="corner">Match</th><th class="koh">Kickoff</th>';
+  let prevDay=null;
+  for(let i=0;i<ncol;i++){ const p=etParts(colMs(i)); const brk=p.day!==prevDay; prevDay=p.day;
+    const lbl = gran>=60 ? (p.hour+(p.dayPeriod?p.dayPeriod[0].toLowerCase():'')) : (brk?p.month+'/'+p.day:p.minute);
+    head+='<th class="h'+(brk?' daybrk':'')+'" title="'+p.month+'/'+p.day+' '+p.hour+':'+p.minute+(p.dayPeriod?' '+p.dayPeriod:'')+'">'+lbl+'</th>'; }
+  let h='<div style="color:var(--gray);font-size:12px;margin:0 0 6px">Last '+W+'h · '+(gran>=60?'hourly':'15-min')+' · times ET'+(Object.keys(g).length?'':' · no drops in window')+'</div>';
+  h+='<table><tr>'+head+'</tr>';
+  for(const sec of SECTIONS){
+    let rows=[...eff].filter(mi=>SEC[mi]===sec && has.has(mi)); if(!rows.length) continue;
+    rows.sort((a,b)=>KO[a]-KO[b]);
+    const ko=sec.startsWith("Group ")?'var(--green-dark)':'var(--red)';
+    h+='<tr class="sec"><td class="sechd" colspan="'+(ncol+2)+'"><span class="dot" style="background:'+ko+'"></span>'+sec+'</td></tr>';
+    for(const mi of rows){ const m=MTA[mi];
+      h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko">'+koShort(m.ko)+'</td>';
+      let prev=null;
+      for(let i=0;i<ncol;i++){ const brk=etParts(colMs(i)).day!==prev; prev=etParts(colMs(i)).day;
+        const v=g[mi][i]||0; const [bg,fg]=shade(v,mx);
+        h+='<td class="'+(brk?'daybrk':'')+'" style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
+      h+='</tr>'; }
+  }
+  h+='</table>'; $('#view').innerHTML=h;
+}
+function colHr(ms){const p=etParts(ms);return (+p.hour)+(p.dayPeriod?p.dayPeriod[0].toLowerCase():'');}
+function koShort(iso){const p=etParts(Date.parse(iso));return p.month+'/'+p.day;}
+
+// ---- URL state (shareable) ----
+function writeURL(){
+  const q=new URLSearchParams(); q.set('view',state.view);
+  if(state.cities.size!==state.allCities.length) q.set('city',[...state.cities].join('~'));
+  if(state.stages.size!==STAGE_OPTS.length) q.set('stage',[...state.stages].join(','));
+  const inscope=MTA.filter(scopeNoGame).length;
+  if(state.games.size!==inscope) q.set('game',[...state.games].join(','));
+  if(state.dmin) q.set('dmin',state.dmin); if(state.dmax) q.set('dmax',state.dmax);
+  if(state.view==='recent'){ q.set('w',state.recW); q.set('gr',state.recG); }
+  history.replaceState(null,'','?'+q.toString());
+}
+function readURL(){
+  const q=new URLSearchParams(location.search); if(![...q].length) return;
+  if(q.get('view')) state.view=q.get('view');
+  if(q.get('city')) state.cities=new Set(q.get('city').split('~'));
+  if(q.get('stage')) state.stages=new Set(q.get('stage').split(','));
+  if(q.get('dmin')) state.dmin=q.get('dmin'); if(q.get('dmax')) state.dmax=q.get('dmax');
+  if(q.get('game')) state.games=new Set(q.get('game').split(',').map(Number));
+  if(q.get('w')) state.recW=+q.get('w'); if(q.get('gr')) state.recG=+q.get('gr');
+}
+</script>
+</body>
+</html>
