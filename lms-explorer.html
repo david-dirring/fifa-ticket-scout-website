@@ -116,8 +116,8 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
   <details class="dd" id="dd-stage"><summary id="sum-stage">Stage</summary><div class="panel" id="pan-stage"></div></details>
   <details class="dd" id="dd-game"><summary id="sum-game">Game</summary><div class="panel" id="pan-game"></div></details>
   <span id="recctl" style="display:none">
-    <span class="seg" id="recwin"><button data-w="24">24h</button><button data-w="36" class="on">36h</button><button data-w="48">48h</button><button data-w="72">72h</button></span>
-    <span class="seg" id="recgran"><button data-g="15">15-min</button><button data-g="60" class="on">hourly</button></span>
+    <span class="seg" id="recwin"><button data-w="24">24h</button><button data-w="36" class="on">36h</button><button data-w="48">48h</button><button data-w="72">72h</button><button data-w="336">14d</button></span>
+    <span class="seg" id="recgran"><button data-g="15">15-min</button><button data-g="60" class="on">hourly</button><button data-g="1440">daily</button></span>
   </span>
 </div>
 
@@ -175,15 +175,19 @@ function init(){
   rebuildGamePanel();
   // events
   $('#tabs').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.view=b.dataset.v; syncTabs(); writeURL(); render();};
-  $('#recwin').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recW=+b.dataset.w; segOn('#recwin',b); writeURL(); render();};
-  $('#recgran').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recG=+b.dataset.g; segOn('#recgran',b); writeURL(); render();};
+  $('#recwin').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recW=+b.dataset.w;
+    if(state.recW>72 && state.recG<1440) state.recG=1440;   // 14d only makes sense daily
+    syncRec(); writeURL(); render();};
+  $('#recgran').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recG=+b.dataset.g;
+    if(state.recG<1440 && state.recW>72) state.recW=72;     // sub-day columns need a <=72h window
+    syncRec(); writeURL(); render();};
   $('#loading').style.display='none'; $('#controls').style.display='flex'; $('#filters').style.display='flex'; $('#legend').style.display='flex';
   syncTabs(); render();
 }
 
 function syncTabs(){ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===state.view));
-  $('#recctl').style.display = state.view==='recent'?'inline':'none';
-  segOn('#recwin',document.querySelector('#recwin button[data-w="'+state.recW+'"]'));
+  $('#recctl').style.display = state.view==='recent'?'inline':'none'; syncRec(); }
+function syncRec(){ segOn('#recwin',document.querySelector('#recwin button[data-w="'+state.recW+'"]'));
   segOn('#recgran',document.querySelector('#recgran button[data-g="'+state.recG+'"]')); }
 function segOn(sel,btn){document.querySelectorAll(sel+' button').forEach(b=>b.classList.toggle('on',b===btn));}
 
@@ -276,7 +280,38 @@ function renderGames(eff){
 function koLabel(iso){const p=etParts(Date.parse(iso));
   return p.month+'/'+p.day+' '+p.hour+(p.minute==='00'?'':':'+p.minute)+(p.dayPeriod||'').toLowerCase()+' ET';}
 
+function dayLabel(iso,idx){ const [Y,M,Dd]=iso.split('-').map(Number);
+  const d=new Date(Date.UTC(Y,M-1,Dd+idx,12)); const wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getUTCDay()];
+  const md=(d.getUTCMonth()+1)+'/'+d.getUTCDate(); return {wd,md,full:wd+' '+md}; }
+
+function renderRecentDaily(eff){
+  const ND=D.daily_days, ndays=Math.min(ND, Math.max(1, Math.round(state.recW/24))), firstDay=ND-ndays;
+  const cols=[]; for(let i=0;i<ndays;i++) cols.push(dayLabel(D.daily_start, firstDay+i));
+  const g={}, has=new Set();
+  for(const [mi,day,ci,n] of D.daily){ if(!eff.has(mi)||day<firstDay) continue;
+    (g[mi]||(g[mi]=new Array(ndays).fill(0)))[day-firstDay]+=n; has.add(mi); }
+  let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
+  let trow='<tr><th class="corner">Match</th><th class="koh">Kickoff (ET)</th>';
+  for(let i=0;i<ndays;i++) trow+='<th class="h" title="'+cols[i].full+'"><div style="color:var(--gray);font-weight:700;font-size:10px">'+cols[i].wd+'</div>'+cols[i].md+'</th>';
+  trow+='</tr>';
+  let h='<div style="color:var(--gray);font-size:12px;margin:0 0 6px">Last <b>'+ndays+' days</b> · daily columns (ET), oldest on the left'+(Object.keys(g).length?'':' · no drops in this window')+'</div>';
+  h+='<table>'+trow;
+  for(const sec of SECTIONS){
+    let rows=[...eff].filter(mi=>SEC[mi]===sec && has.has(mi)); if(!rows.length) continue;
+    rows.sort((a,b)=>KO[a]-KO[b]);
+    const ko=sec.startsWith("Group ")?'var(--green-dark)':'var(--red)';
+    h+='<tr class="sec"><td class="sechd" colspan="'+(ndays+2)+'"><span class="dot" style="background:'+ko+'"></span>'+sec+'</td></tr>';
+    for(const mi of rows){ const m=MTA[mi];
+      h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko">'+koLabel(m.ko)+'</td>';
+      for(let i=0;i<ndays;i++){ const v=g[mi][i]||0; const [bg,fg]=shade(v,mx);
+        h+='<td style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
+      h+='</tr>'; }
+  }
+  h+='</table>'; $('#view').innerHTML=h;
+}
+
 function renderRecent(eff){
+  if(state.recG>=1440) return renderRecentDaily(eff);
   const SLOTS=D.recent_slots, start=Date.parse(D.recent_start), W=state.recW, gran=state.recG;
   const firstSlot=Math.max(0, SLOTS - W*4);                 // 4 fifteen-min slots / hour
   const per = gran/15;                                       // 15->1, 60->4 slots per column
@@ -333,6 +368,7 @@ function readURL(){
   if(q.get('stage')) state.stages=new Set(q.get('stage').split(','));
   if(q.get('game')) state.games=new Set(q.get('game').split(',').map(Number));
   if(q.get('w')) state.recW=+q.get('w'); if(q.get('gr')) state.recG=+q.get('gr');
+  if(state.recW>72) state.recG=1440;   // 14d implies daily (no fine grain that wide)
 }
 </script>
 </body>
