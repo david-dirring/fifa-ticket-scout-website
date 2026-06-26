@@ -115,7 +115,7 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
   <details class="dd" id="dd-game"><summary id="sum-game">Game</summary><div class="panel" id="pan-game"></div></details>
   <span id="recctl" style="display:none">
     <span class="seg" id="recwin"><button data-w="24">24h</button><button data-w="36" class="on">36h</button><button data-w="48">48h</button><button data-w="72">72h</button></span>
-    <span class="seg" id="recgran"><button data-g="15" class="on">15-min</button><button data-g="60">hourly</button></span>
+    <span class="seg" id="recgran"><button data-g="15">15-min</button><button data-g="60" class="on">hourly</button></span>
   </span>
 </div>
 <div class="legend" id="legend" style="display:none">
@@ -167,7 +167,7 @@ function init(){
   // default state
   const cities=[...new Set(MTA.map(m=>m.city))].sort();
   state={ view:'games', cities:new Set(cities), stages:new Set(STAGE_OPTS.map(s=>s[0])),
-    games:new Set(MTA.map(m=>m.n)), recW:36, recG:15, sort:'kickoff', allCities:cities };
+    games:new Set(MTA.map(m=>m.n)), recW:36, recG:60, sort:'kickoff', allCities:cities };
   readURL();
   buildCityPanel(); buildStagePanel();
   rebuildGamePanel();
