@@ -56,6 +56,8 @@ details.dd>summary::after{content:' \25BE';color:var(--gray)}
 .seg button.on{background:var(--white);color:var(--navy);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .reclbl{color:var(--gray);font-size:12px;font-weight:700;margin-left:4px}
 
+.reads{margin:2px 20px 10px;color:var(--gray);font-size:12.5px;line-height:1.5;max-width:940px}
+.reads b{color:var(--navy)}
 #view{overflow:auto;padding:4px 20px 8px}
 /* keep the column headers pinned while scrolling the (often tall) Games/Recent tables */
 #view thead th{position:sticky;z-index:3;background:var(--white);box-shadow:0 0 0 2px var(--white)}
@@ -125,6 +127,7 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
 </div>
 
 <div id="loading">Loading data…</div>
+<div class="reads" id="reads" style="display:none"></div>
 <div id="view"></div>
 <div class="legend" id="legend" style="display:none">
   <span class="sw">fewer <span class="sb"></span> more seats</span>
@@ -194,12 +197,17 @@ function init(){
     if(!DESKTOP && state.recG<1440 && state.recW>72) state.recW=72;     // mobile: fine grain -> <=72h
     syncRec(); writeURL(); render();};
   $('#sortctl').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.sort=b.dataset.s; segOn('#sortctl',b); writeURL(); render();};
-  $('#loading').style.display='none'; $('#controls').style.display='flex'; $('#filters').style.display='flex'; $('#legend').style.display='flex';
+  $('#loading').style.display='none'; $('#controls').style.display='flex'; $('#filters').style.display='flex'; $('#reads').style.display='block'; $('#legend').style.display='flex';
   syncTabs(); render(); fitView();
   window.addEventListener('resize',()=>{ fitView(); stickHead(); });
 }
 
+const READS={
+  games:'every row is a game, every column is how far before kickoff seats first showed up — hours on the left, days on the right. Darker means more seats appeared in that window. Hatched cells haven’t happened yet.',
+  recent:'every row is a game, every column is a recent block of time, oldest on the left. Darker means more seats first showed up then. The buttons zoom from 15-minute blocks out to a 14-day daily view.',
+  heatmap:'every row is an hour of the day (ET), every column is how far before kickoff. Darker shows when seats tend to drop, added up across every game you’ve filtered to.'};
 function syncTabs(){ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===state.view));
+  $('#reads').innerHTML='<b>Reads as</b> — '+READS[state.view];
   $('#recctl').style.display = state.view==='recent'?'inline':'none';
   $('#sortctl').style.display = state.view==='heatmap'?'none':'inline-flex';   // no rows to sort in the heatmap
   segOn('#sortctl',document.querySelector('#sortctl button[data-s="'+state.sort+'"]')); syncRec(); }
