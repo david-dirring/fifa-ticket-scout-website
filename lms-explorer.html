@@ -130,6 +130,7 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
   <span><span class="dot" style="background:var(--green-dark)"></span>group</span>
   <span><span class="dot" style="background:var(--red)"></span>knockout</span>
   <span class="muted"><i>italic kickoff</i> = upcoming (still filling)</span>
+  <span class="muted">hover a cell for the category breakdown</span>
 </div>
 
 <script>
@@ -147,6 +148,11 @@ function shade(v,mx){ if(!v) return ["#f1f5f9","#cbd5e1"]; let t=Math.sqrt(Math.
   else{let u=(t-0.6)/0.4; r=lerp(0,0xf5,u);g=lerp(0x91,0xa6,u);b=lerp(0x46,0x23,u);}
   return ['rgb('+r+','+g+','+b+')', t<0.32?'#15324a':'#fff']; }
 function fmt(v){return !v?'':v>=1000?(v/1000).toFixed(1)+'k':''+v}
+// Hover tooltip: exact total + per-category split for a cell. vec = counts per D.categories.
+function bucketLbl(i){ return i<4?D.buckets[i]+' before kickoff':D.buckets[i]+' days before kickoff'; }
+function catTip(ctx, vec){ const tot=vec.reduce((a,b)=>a+b,0); if(!tot) return '';
+  const parts=D.categories.map((c,i)=>vec[i]?c+': '+vec[i]:null).filter(Boolean);
+  return ' title="'+ctx+' — '+tot+' seat'+(tot===1?'':'s')+'\n'+parts.join(' · ')+'"'; }
 function hlabel(h){return (h%12||12)+(h<12?'a':'p')}
 const ETF=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
 function etParts(ms){const p={};ETF.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return p;}
@@ -240,8 +246,9 @@ function render(){
 }
 
 function renderMatrix(eff){
-  const NB=D.buckets.length, grid=Array.from({length:24},()=>new Array(NB).fill(0));
-  for(const [mi,hod,bi,ci,n] of D.cells) if(eff.has(mi)) grid[hod][bi]+=n;
+  const NB=D.buckets.length, NC=D.categories.length, grid=Array.from({length:24},()=>new Array(NB).fill(0));
+  const gc=Array.from({length:24},()=>Array.from({length:NB},()=>new Array(NC).fill(0)));
+  for(const [mi,hod,bi,ci,n] of D.cells) if(eff.has(mi)){ grid[hod][bi]+=n; gc[hod][bi][ci]+=n; }
   let mx=1; for(const r of grid) for(const v of r) if(v>mx)mx=v;
   const effA=[...eff], t=now();
   const pend=D.bucket_hi_hours.map(hi=>!effA.some(mi=>KO[mi]-hi*3600000<=t));
@@ -253,7 +260,7 @@ function renderMatrix(eff){
     h+='<tr><td class="lab">'+hlabel(hod)+'</td>';
     for(let bi=0;bi<NB;bi++){ const sep=bi===sepIdx?'sep ':''; const v=grid[hod][bi]; rt+=v;
       if(pend[bi]){ h+='<td class="'+sep+'pending"></td>'; continue; }
-      const [bg,fg]=shade(v,mx); h+='<td class="'+sep.trim()+'" style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
+      const [bg,fg]=shade(v,mx); h+='<td class="'+sep.trim()+'"'+catTip(hlabel(hod)+' ET · '+bucketLbl(bi),gc[hod][bi])+' style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
     h+='<td class="rt">'+fmt(rt)+'</td></tr>'; }
   let col=D.buckets.map((b,bi)=>{let s=0;for(let hod=0;hod<24;hod++)s+=grid[hod][bi];return s;});
   let grand=col.reduce((a,b)=>a+b,0);
@@ -274,9 +281,9 @@ function matchOrder(eff, filt){
 }
 
 function renderGames(eff){
-  const NB=D.buckets.length, g={};
-  for(const mi of eff) g[mi]=new Array(NB).fill(0);
-  for(const [mi,hod,bi,ci,n] of D.cells) if(eff.has(mi)) g[mi][bi]+=n;
+  const NB=D.buckets.length, NC=D.categories.length, g={}, gc={};
+  for(const mi of eff){ g[mi]=new Array(NB).fill(0); gc[mi]=Array.from({length:NB},()=>new Array(NC).fill(0)); }
+  for(const [mi,hod,bi,ci,n] of D.cells) if(eff.has(mi)){ g[mi][bi]+=n; gc[mi][bi][ci]+=n; }
   let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
   const sepIdx=D.buckets.indexOf('2'), t=now(), nh=4, nd=NB-4;
   let h='<table><tr><th class="corner" colspan="2"></th><th class="grp" colspan="'+nh+'">&larr; HOURS before kickoff</th><th class="grp sep" colspan="'+nd+'">DAYS before kickoff &rarr;</th></tr>';
@@ -289,7 +296,7 @@ function renderGames(eff){
       h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko'+(partial?' partial':'')+'">'+koLabel(m.ko)+'</td>';
       for(let bi=0;bi<NB;bi++){ const sep=bi===sepIdx?'sep ':'';
         if(KO[mi]-D.bucket_hi_hours[bi]*3600000>t){ h+='<td class="'+sep+'pending"></td>'; continue; }
-        const v=g[mi][bi]; const [bg,fg]=shade(v,mx); h+='<td class="'+sep.trim()+'" style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
+        const v=g[mi][bi]; const [bg,fg]=shade(v,mx); h+='<td class="'+sep.trim()+'"'+catTip('#'+m.n+' '+m.m+' · '+bucketLbl(bi),gc[mi][bi])+' style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
       h+='</tr>'; }
   }
   h+='</table>'; $('#view').innerHTML=h;
@@ -304,9 +311,10 @@ function dayLabel(iso,idx){ const [Y,M,Dd]=iso.split('-').map(Number);
 function renderRecentDaily(eff){
   const ND=D.daily_days, ndays=Math.min(ND, Math.max(1, Math.round(state.recW/24))), firstDay=ND-ndays;
   const cols=[]; for(let i=0;i<ndays;i++) cols.push(dayLabel(D.daily_start, firstDay+i));
-  const g={}, has=new Set();
+  const NC=D.categories.length, g={}, gc={}, has=new Set();
   for(const [mi,day,ci,n] of D.daily){ if(!eff.has(mi)||day<firstDay) continue;
-    (g[mi]||(g[mi]=new Array(ndays).fill(0)))[day-firstDay]+=n; has.add(mi); }
+    if(!g[mi]){ g[mi]=new Array(ndays).fill(0); gc[mi]=Array.from({length:ndays},()=>new Array(NC).fill(0)); }
+    g[mi][day-firstDay]+=n; gc[mi][day-firstDay][ci]+=n; has.add(mi); }
   let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
   let trow='<tr><th class="corner">Match</th><th class="koh">Kickoff (ET)</th>';
   for(let i=0;i<ndays;i++) trow+='<th class="h" title="'+cols[i].full+'"><div style="color:var(--gray);font-weight:700;font-size:10px">'+cols[i].wd+'</div>'+cols[i].md+'</th>';
@@ -319,7 +327,7 @@ function renderRecentDaily(eff){
     for(const mi of grp.mis){ const m=MTA[mi];
       h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko">'+koLabel(m.ko)+'</td>';
       for(let i=0;i<ndays;i++){ const v=g[mi][i]||0; const [bg,fg]=shade(v,mx);
-        h+='<td style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
+        h+='<td'+catTip('#'+m.n+' '+m.m+' · '+cols[i].full,(gc[mi]&&gc[mi][i])||[])+' style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
       h+='</tr>'; }
   }
   h+='</table>'; $('#view').innerHTML=h;
@@ -334,9 +342,11 @@ function renderRecent(eff){
   const colMs=i=>start+(firstSlot+i*per)*15*60000;
   const cols=[]; for(let i=0;i<ncol;i++) cols.push(etFull(colMs(i)));
   // aggregate
-  const g={}, has=new Set();
+  const NC=D.categories.length, g={}, gc={}, has=new Set();
   for(const [mi,slot,ci,n] of D.recent){ if(!eff.has(mi)||slot<firstSlot) continue;
-    const col=Math.floor((slot-firstSlot)/per); (g[mi]||(g[mi]=new Array(ncol).fill(0)))[col]+=n; has.add(mi); }
+    const col=Math.floor((slot-firstSlot)/per);
+    if(!g[mi]){ g[mi]=new Array(ncol).fill(0); gc[mi]=Array.from({length:ncol},()=>new Array(NC).fill(0)); }
+    g[mi][col]+=n; gc[mi][col][ci]+=n; has.add(mi); }
   let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
   // header row 1: date band (spans each day's columns)
   let band='<tr><th class="corner" colspan="2"></th>';
@@ -359,7 +369,7 @@ function renderRecent(eff){
       h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko">'+koLabel(m.ko)+'</td>';
       for(let i=0;i<ncol;i++){ const brk=i>0&&cols[i].dayKey!==cols[i-1].dayKey;
         const v=g[mi][i]||0; const [bg,fg]=shade(v,mx);
-        h+='<td class="'+(brk?'daybrk':'')+'" style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
+        h+='<td class="'+(brk?'daybrk':'')+'"'+catTip('#'+m.n+' '+m.m+' · '+cols[i].full,(gc[mi]&&gc[mi][i])||[])+' style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
       h+='</tr>'; }
   }
   h+='</table>'; $('#view').innerHTML=h;
