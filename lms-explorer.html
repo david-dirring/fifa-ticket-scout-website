@@ -57,6 +57,8 @@ details.dd>summary::after{content:' \25BE';color:var(--gray)}
 .reclbl{color:var(--gray);font-size:12px;font-weight:700;margin-left:4px}
 
 #view{overflow:auto;padding:4px 20px 8px}
+/* keep the column headers pinned while scrolling the (often tall) Games/Recent tables */
+#view thead th{position:sticky;z-index:3;background:var(--white);box-shadow:0 0 0 2px var(--white)}
 table{border-collapse:separate;border-spacing:2px;font-family:'SF Mono',Monaco,'Cascadia Code',monospace}
 th,td{text-align:center;font-size:11px}
 th.h{color:var(--navy);font-weight:800;padding:2px 2px}
@@ -193,7 +195,8 @@ function init(){
     syncRec(); writeURL(); render();};
   $('#sortctl').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.sort=b.dataset.s; segOn('#sortctl',b); writeURL(); render();};
   $('#loading').style.display='none'; $('#controls').style.display='flex'; $('#filters').style.display='flex'; $('#legend').style.display='flex';
-  syncTabs(); render();
+  syncTabs(); render(); fitView();
+  window.addEventListener('resize',()=>{ fitView(); stickHead(); });
 }
 
 function syncTabs(){ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===state.view));
@@ -243,7 +246,15 @@ function render(){
   if(state.view==='heatmap') renderMatrix(eff);
   else if(state.view==='games') renderGames(eff);
   else renderRecent(eff);
+  stickHead();
 }
+// Cap #view to the viewport so it scrolls internally (overflow:auto), which is what
+// position:sticky needs to pin the header. Recomputed on load + resize (layout above is fixed).
+function fitView(){ const v=$('#view'); if(!v) return;
+  v.style.maxHeight=Math.max(300, window.innerHeight - v.getBoundingClientRect().top - 12)+'px'; }
+// Stack the (1-2) header rows with cumulative tops so multi-row headers all pin. +2 = border-spacing.
+function stickHead(){ const t=$('#view table'); if(!t||!t.tHead) return; let top=0;
+  for(const tr of t.tHead.rows){ for(const th of tr.cells) th.style.top=top+'px'; top+=tr.offsetHeight+2; } }
 
 function renderMatrix(eff){
   const NB=D.buckets.length, NC=D.categories.length, grid=Array.from({length:24},()=>new Array(NB).fill(0));
@@ -286,8 +297,8 @@ function renderGames(eff){
   for(const [mi,hod,bi,ci,n] of D.cells) if(eff.has(mi)){ g[mi][bi]+=n; gc[mi][bi][ci]+=n; }
   let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
   const sepIdx=D.buckets.indexOf('2'), t=now(), nh=4, nd=NB-4;
-  let h='<table><tr><th class="corner" colspan="2"></th><th class="grp" colspan="'+nh+'">&larr; HOURS before kickoff</th><th class="grp sep" colspan="'+nd+'">DAYS before kickoff &rarr;</th></tr>';
-  h+='<tr><th class="corner">Match</th><th class="koh">Kickoff (ET)</th>'+D.buckets.map((b,i)=>'<th class="h'+(i===sepIdx?' sep':'')+'">'+b+'</th>').join('')+'</tr>';
+  let h='<table><thead><tr><th class="corner" colspan="2"></th><th class="grp" colspan="'+nh+'">&larr; HOURS before kickoff</th><th class="grp sep" colspan="'+nd+'">DAYS before kickoff &rarr;</th></tr>';
+  h+='<tr><th class="corner">Match</th><th class="koh">Kickoff (ET)</th>'+D.buckets.map((b,i)=>'<th class="h'+(i===sepIdx?' sep':'')+'">'+b+'</th>').join('')+'</tr></thead><tbody>';
   for(const grp of matchOrder(eff, null)){ const rows=grp.mis;
     if(grp.sec){ const ko=grp.sec.startsWith("Group ")?'var(--green-dark)':'var(--red)';
       let stot=0; for(const mi of rows) stot+=g[mi].reduce((a,b)=>a+b,0);
@@ -299,7 +310,7 @@ function renderGames(eff){
         const v=g[mi][bi]; const [bg,fg]=shade(v,mx); h+='<td class="'+sep.trim()+'"'+catTip('#'+m.n+' '+m.m+' · '+bucketLbl(bi),gc[mi][bi])+' style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
       h+='</tr>'; }
   }
-  h+='</table>'; $('#view').innerHTML=h;
+  h+='</tbody></table>'; $('#view').innerHTML=h;
 }
 function koLabel(iso){const p=etParts(Date.parse(iso));
   return p.month+'/'+p.day+' '+p.hour+(p.minute==='00'?'':':'+p.minute)+(p.dayPeriod||'').toLowerCase()+' ET';}
@@ -320,7 +331,7 @@ function renderRecentDaily(eff){
   for(let i=0;i<ndays;i++) trow+='<th class="h" title="'+cols[i].full+'"><div style="color:var(--gray);font-weight:700;font-size:10px">'+cols[i].wd+'</div>'+cols[i].md+'</th>';
   trow+='</tr>';
   let h='<div style="color:var(--gray);font-size:12px;margin:0 0 6px">Last <b>'+ndays+' days</b> · daily columns (ET), oldest on the left'+(Object.keys(g).length?'':' · no drops in this window')+'</div>';
-  h+='<table>'+trow;
+  h+='<table><thead>'+trow+'</thead><tbody>';
   for(const grp of matchOrder(eff, has)){
     if(grp.sec){ const ko=grp.sec.startsWith("Group ")?'var(--green-dark)':'var(--red)';
       h+='<tr class="sec"><td class="sechd" colspan="'+(ndays+2)+'"><span class="dot" style="background:'+ko+'"></span>'+grp.sec+'</td></tr>'; }
@@ -330,7 +341,7 @@ function renderRecentDaily(eff){
         h+='<td'+catTip('#'+m.n+' '+m.m+' · '+cols[i].full,(gc[mi]&&gc[mi][i])||[])+' style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
       h+='</tr>'; }
   }
-  h+='</table>'; $('#view').innerHTML=h;
+  h+='</tbody></table>'; $('#view').innerHTML=h;
 }
 
 function renderRecent(eff){
@@ -361,7 +372,7 @@ function renderRecent(eff){
   trow+='</tr>';
   const wlbl=W>72?(W/24)+' days':W+'h';
   let h='<div style="color:var(--gray);font-size:12px;margin:0 0 6px">Last <b>'+wlbl+'</b> · '+(gran>=60?'hourly':'15-min')+' columns · time of day (ET), oldest on the left'+(Object.keys(g).length?'':' · no drops in this window')+'</div>';
-  h+='<table>'+band+trow;
+  h+='<table><thead>'+band+trow+'</thead><tbody>';
   for(const grp of matchOrder(eff, has)){
     if(grp.sec){ const ko=grp.sec.startsWith("Group ")?'var(--green-dark)':'var(--red)';
       h+='<tr class="sec"><td class="sechd" colspan="'+(ncol+2)+'"><span class="dot" style="background:'+ko+'"></span>'+grp.sec+'</td></tr>'; }
@@ -372,7 +383,7 @@ function renderRecent(eff){
         h+='<td class="'+(brk?'daybrk':'')+'"'+catTip('#'+m.n+' '+m.m+' · '+cols[i].full,(gc[mi]&&gc[mi][i])||[])+' style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
       h+='</tr>'; }
   }
-  h+='</table>'; $('#view').innerHTML=h;
+  h+='</tbody></table>'; $('#view').innerHTML=h;
 }
 
 // ---- URL state (shareable) ----
