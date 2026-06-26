@@ -252,8 +252,9 @@ function renderGames(eff){
   for(const mi of eff) g[mi]=new Array(NB).fill(0);
   for(const [mi,hod,bi,ci,n] of D.cells) if(eff.has(mi)) g[mi][bi]+=n;
   let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
-  const sepIdx=D.buckets.indexOf('2'), t=now();
-  let h='<table><tr><th class="corner">Match</th><th class="koh">Kickoff (ET)</th>'+D.buckets.map((b,i)=>'<th class="h'+(i===sepIdx?' sep':'')+'">'+b+'</th>').join('')+'</tr>';
+  const sepIdx=D.buckets.indexOf('2'), t=now(), nh=4, nd=NB-4;
+  let h='<table><tr><th class="corner" colspan="2"></th><th class="grp" colspan="'+nh+'">&larr; HOURS before kickoff</th><th class="grp sep" colspan="'+nd+'">DAYS before kickoff &rarr;</th></tr>';
+  h+='<tr><th class="corner">Match</th><th class="koh">Kickoff (ET)</th>'+D.buckets.map((b,i)=>'<th class="h'+(i===sepIdx?' sep':'')+'">'+b+'</th>').join('')+'</tr>';
   for(const sec of SECTIONS){
     let rows=[...eff].filter(mi=>SEC[mi]===sec); if(!rows.length) continue;
     rows.sort((a,b)=>KO[a]-KO[b]);
