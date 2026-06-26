@@ -108,8 +108,10 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
   <div class="tabs" id="tabs">
     <button data-v="games" class="on">Games v Match Day</button>
     <button data-v="recent">Recent Drops Trend</button>
-    <button data-v="matrix">Hour v Match Day (Matrix)</button>
+    <button data-v="heatmap">Hour v Match Day (Heatmap)</button>
   </div>
+</div>
+<div class="controls" id="filters" style="display:none">
   <details class="dd" id="dd-city"><summary id="sum-city">City</summary><div class="panel" id="pan-city"></div></details>
   <details class="dd" id="dd-stage"><summary id="sum-stage">Stage</summary><div class="panel" id="pan-stage"></div></details>
   <details class="dd" id="dd-game"><summary id="sum-game">Game</summary><div class="panel" id="pan-game"></div></details>
@@ -118,6 +120,9 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
     <span class="seg" id="recgran"><button data-g="15">15-min</button><button data-g="60" class="on">hourly</button></span>
   </span>
 </div>
+
+<div id="loading">Loading data…</div>
+<div id="view"></div>
 <div class="legend" id="legend" style="display:none">
   <span class="sw">fewer <span class="sb"></span> more seats</span>
   <span class="sw"><span class="ph"></span> window hasn't started yet</span>
@@ -125,9 +130,6 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
   <span><span class="dot" style="background:var(--red)"></span>knockout</span>
   <span class="muted"><i>italic kickoff</i> = upcoming (still filling)</span>
 </div>
-
-<div id="loading">Loading data…</div>
-<div id="view"></div>
 
 <script>
 const $=s=>document.querySelector(s), now=()=>Date.now();
@@ -175,7 +177,7 @@ function init(){
   $('#tabs').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.view=b.dataset.v; syncTabs(); writeURL(); render();};
   $('#recwin').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recW=+b.dataset.w; segOn('#recwin',b); writeURL(); render();};
   $('#recgran').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recG=+b.dataset.g; segOn('#recgran',b); writeURL(); render();};
-  $('#loading').style.display='none'; $('#controls').style.display='flex'; $('#legend').style.display='flex';
+  $('#loading').style.display='none'; $('#controls').style.display='flex'; $('#filters').style.display='flex'; $('#legend').style.display='flex';
   syncTabs(); render();
 }
 
@@ -221,7 +223,7 @@ function effSet(){ const s=new Set(); MTA.forEach((m,i)=>{ if(scopeNoGame(m)&&st
 
 function render(){
   const eff=effSet();
-  if(state.view==='matrix') renderMatrix(eff);
+  if(state.view==='heatmap') renderMatrix(eff);
   else if(state.view==='games') renderGames(eff);
   else renderRecent(eff);
 }
