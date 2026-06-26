@@ -133,6 +133,9 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
 
 <script>
 const $=s=>document.querySelector(s), now=()=>Date.now();
+// On a narrow screen, fine grain (15-min/hourly) at 14d = too many columns, so we
+// snap the window back. Desktop has room to scroll, so we let the combo through.
+const DESKTOP=window.matchMedia('(min-width:760px)').matches;
 const SECTIONS=["Group A","Group B","Group C","Group D","Group E","Group F","Group G","Group H","Group I","Group J","Group K","Group L","Round of 32","Round of 16","Quarterfinals","Semis · Bronze · Final"];
 function sectionOf(st){ if(st.startsWith("Group ")) return st; return {R32:"Round of 32",R16:"Round of 16",QF:"Quarterfinals"}[st]||"Semis · Bronze · Final"; }
 function stageKey(st){ if(st.startsWith("Group ")) return "Group"; return {R32:"R32",R16:"R16",QF:"QF"}[st]||"Finals"; }
@@ -176,10 +179,10 @@ function init(){
   // events
   $('#tabs').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.view=b.dataset.v; syncTabs(); writeURL(); render();};
   $('#recwin').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recW=+b.dataset.w;
-    if(state.recW>72 && state.recG<1440) state.recG=1440;   // 14d only makes sense daily
+    if(!DESKTOP && state.recW>72 && state.recG<1440) state.recG=1440;   // mobile: 14d -> daily
     syncRec(); writeURL(); render();};
   $('#recgran').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recG=+b.dataset.g;
-    if(state.recG<1440 && state.recW>72) state.recW=72;     // sub-day columns need a <=72h window
+    if(!DESKTOP && state.recG<1440 && state.recW>72) state.recW=72;     // mobile: fine grain -> <=72h
     syncRec(); writeURL(); render();};
   $('#loading').style.display='none'; $('#controls').style.display='flex'; $('#filters').style.display='flex'; $('#legend').style.display='flex';
   syncTabs(); render();
@@ -334,7 +337,8 @@ function renderRecent(eff){
     const lbl=(gran>=60||p.minute==='00')?p.hourLbl:'';
     trow+='<th class="h'+(brk?' daybrk':'')+'" title="'+p.full+'">'+lbl+'</th>'; }
   trow+='</tr>';
-  let h='<div style="color:var(--gray);font-size:12px;margin:0 0 6px">Last <b>'+W+'h</b> · '+(gran>=60?'hourly':'15-min')+' columns · time of day (ET), oldest on the left'+(Object.keys(g).length?'':' · no drops in this window')+'</div>';
+  const wlbl=W>72?(W/24)+' days':W+'h';
+  let h='<div style="color:var(--gray);font-size:12px;margin:0 0 6px">Last <b>'+wlbl+'</b> · '+(gran>=60?'hourly':'15-min')+' columns · time of day (ET), oldest on the left'+(Object.keys(g).length?'':' · no drops in this window')+'</div>';
   h+='<table>'+band+trow;
   for(const sec of SECTIONS){
     let rows=[...eff].filter(mi=>SEC[mi]===sec && has.has(mi)); if(!rows.length) continue;
@@ -368,7 +372,7 @@ function readURL(){
   if(q.get('stage')) state.stages=new Set(q.get('stage').split(','));
   if(q.get('game')) state.games=new Set(q.get('game').split(',').map(Number));
   if(q.get('w')) state.recW=+q.get('w'); if(q.get('gr')) state.recG=+q.get('gr');
-  if(state.recW>72) state.recG=1440;   // 14d implies daily (no fine grain that wide)
+  if(!DESKTOP && state.recW>72) state.recG=1440;   // mobile: 14d implies daily
 }
 </script>
 </body>
