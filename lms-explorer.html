@@ -112,7 +112,6 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
   <details class="dd" id="dd-city"><summary id="sum-city">City</summary><div class="panel" id="pan-city"></div></details>
   <details class="dd" id="dd-stage"><summary id="sum-stage">Stage</summary><div class="panel" id="pan-stage"></div></details>
   <details class="dd" id="dd-game"><summary id="sum-game">Game</summary><div class="panel" id="pan-game"></div></details>
-  <span class="dates">date <input type="date" id="dmin"> – <input type="date" id="dmax"></span>
   <span id="recctl" style="display:none">
     <span class="seg" id="recwin"><button data-w="24">24h</button><button data-w="36" class="on">36h</button><button data-w="48">48h</button><button data-w="72">72h</button></span>
     <span class="seg" id="recgran"><button data-g="15" class="on">15-min</button><button data-g="60">hourly</button></span>
@@ -166,17 +165,13 @@ function init(){
   $('#refreshed').innerHTML='Last refreshed <b>'+ago+'</b> · '+new Date(g).toLocaleString('en-US',{timeZone:'America/New_York',dateStyle:'medium',timeStyle:'short'})+' ET';
   // default state
   const cities=[...new Set(MTA.map(m=>m.city))].sort();
-  const dates=MTA.map(m=>m.ko.slice(0,10));
   state={ view:'matrix', cities:new Set(cities), stages:new Set(STAGE_OPTS.map(s=>s[0])),
-    games:new Set(MTA.map(m=>m.n)), dmin:dates.reduce((a,b)=>a<b?a:b), dmax:dates.reduce((a,b)=>a>b?a:b),
-    recW:36, recG:15, sort:'kickoff', allCities:cities };
+    games:new Set(MTA.map(m=>m.n)), recW:36, recG:15, sort:'kickoff', allCities:cities };
   readURL();
-  buildCityPanel(); buildStagePanel(); $('#dmin').value=state.dmin; $('#dmax').value=state.dmax;
+  buildCityPanel(); buildStagePanel();
   rebuildGamePanel();
   // events
   $('#tabs').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.view=b.dataset.v; syncTabs(); writeURL(); render();};
-  $('#dmin').onchange=e=>{state.dmin=e.target.value; onScope();};
-  $('#dmax').onchange=e=>{state.dmax=e.target.value; onScope();};
   $('#recwin').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recW=+b.dataset.w; segOn('#recwin',b); writeURL(); render();};
   $('#recgran').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recG=+b.dataset.g; segOn('#recgran',b); writeURL(); render();};
   $('#loading').style.display='none'; $('#controls').style.display='flex'; $('#legend').style.display='flex';
@@ -220,8 +215,7 @@ function updCitySum(){ $('#sum-city').textContent='City ('+state.cities.size+'/'
 function updStageSum(){ $('#sum-stage').textContent='Stage ('+state.stages.size+'/'+STAGE_OPTS.length+')'; }
 function updGameSum(){ const tot=MTA.filter(scopeNoGame).length; $('#sum-game').textContent='Game ('+state.games.size+'/'+tot+')'; }
 
-function scopeNoGame(m){ const d=m.ko.slice(0,10);
-  return state.cities.has(m.city) && state.stages.has(stageKey(m.stage)) && d>=state.dmin && d<=state.dmax; }
+function scopeNoGame(m){ return state.cities.has(m.city) && state.stages.has(stageKey(m.stage)); }
 function effSet(){ const s=new Set(); MTA.forEach((m,i)=>{ if(scopeNoGame(m)&&state.games.has(m.n)) s.add(i); }); return s; }
 
 function render(){
@@ -325,7 +319,6 @@ function writeURL(){
   if(state.stages.size!==STAGE_OPTS.length) q.set('stage',[...state.stages].join(','));
   const inscope=MTA.filter(scopeNoGame).length;
   if(state.games.size!==inscope) q.set('game',[...state.games].join(','));
-  if(state.dmin) q.set('dmin',state.dmin); if(state.dmax) q.set('dmax',state.dmax);
   if(state.view==='recent'){ q.set('w',state.recW); q.set('gr',state.recG); }
   history.replaceState(null,'','?'+q.toString());
 }
@@ -334,7 +327,6 @@ function readURL(){
   if(q.get('view')) state.view=q.get('view');
   if(q.get('city')) state.cities=new Set(q.get('city').split('~'));
   if(q.get('stage')) state.stages=new Set(q.get('stage').split(','));
-  if(q.get('dmin')) state.dmin=q.get('dmin'); if(q.get('dmax')) state.dmax=q.get('dmax');
   if(q.get('game')) state.games=new Set(q.get('game').split(',').map(Number));
   if(q.get('w')) state.recW=+q.get('w'); if(q.get('gr')) state.recG=+q.get('gr');
 }
