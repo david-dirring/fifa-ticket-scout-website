@@ -74,8 +74,9 @@ td.tot{color:var(--green-dark);font-weight:800;border-top:2px solid var(--border
 tr.sec td{background:var(--band);height:22px}
 td.sechd{text-align:left;font-family:-apple-system,sans-serif;font-weight:800;color:var(--navy);font-size:12px;padding:0 8px;border-radius:5px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
-th.daybrk{border-left:2px solid var(--border)}
-td.daybrk{border-left:2px solid var(--border)}
+th.daybrk{border-left:2px solid var(--gray-light)}
+td.daybrk{border-left:2px solid var(--gray-light)}
+th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;padding:1px 5px 3px;border-left:2px solid var(--gray-light);font-family:-apple-system,sans-serif;white-space:nowrap}
 
 .legend{margin:8px 20px 20px;color:var(--gray);font-size:12px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
 .legend .sw{display:inline-flex;gap:6px;align-items:center}
@@ -141,8 +142,13 @@ function shade(v,mx){ if(!v) return ["#f1f5f9","#cbd5e1"]; let t=Math.sqrt(Math.
   return ['rgb('+r+','+g+','+b+')', t<0.32?'#15324a':'#fff']; }
 function fmt(v){return !v?'':v>=1000?(v/1000).toFixed(1)+'k':''+v}
 function hlabel(h){return (h%12||12)+(h<12?'a':'p')}
-const ETF=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'});
+const ETF=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
 function etParts(ms){const p={};ETF.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return p;}
+const ETF2=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'short',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+function etFull(ms){const p={};ETF2.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);
+  const ap=(p.dayPeriod||'').toLowerCase();
+  return {dayKey:p.month+'/'+p.day, dateLbl:p.weekday+' '+p.month+'/'+p.day, hourLbl:p.hour+(ap[0]||''),
+          minute:p.minute, full:p.weekday+' '+p.month+'/'+p.day+' '+p.hour+':'+p.minute+' '+ap+' ET'};}
 
 let D, MTA, KO, SEC, midxByN, state;
 
@@ -201,11 +207,11 @@ function buildStagePanel(){ chkPanel($('#pan-stage'), STAGE_OPTS.map(s=>({k:s[0]
   k=>state.stages.has(k), (k,on,bulk)=>{ on?state.stages.add(k):state.stages.delete(k); if(!bulk)onScope(); else bulkPending=true; }); updStageSum(); }
 function rebuildGamePanel(){
   const inScope=MTA.filter(m=>scopeNoGame(m));
-  const items=inScope.map(m=>({grp:sectionOf(m.stage),k:m.n,lbl:'#'+m.n+' '+m.m}));
+  const items=inScope.map(m=>({k:m.n,lbl:'#'+m.n+' '+m.m}));
   // keep only in-scope games selected
   state.games=new Set(inScope.filter(m=>state.games.has(m.n)).map(m=>m.n));
   if(state.games.size===0) inScope.forEach(m=>state.games.add(m.n));
-  chkPanel($('#pan-game'), items, k=>state.games.has(+k), (k,on,bulk)=>{ k=+k; on?state.games.add(k):state.games.delete(k); if(!bulk){writeURL();render();updGameSum();} else bulkPending=true; }, true);
+  chkPanel($('#pan-game'), items, k=>state.games.has(+k), (k,on,bulk)=>{ k=+k; on?state.games.add(k):state.games.delete(k); if(!bulk){writeURL();render();updGameSum();} else bulkPending=true; });
   updGameSum();
 }
 function onScope(){ buildCityPanel(); buildStagePanel(); rebuildGamePanel(); writeURL(); render(); }
@@ -277,37 +283,40 @@ function renderRecent(eff){
   const firstSlot=Math.max(0, SLOTS - W*4);                 // 4 fifteen-min slots / hour
   const per = gran/15;                                       // 15->1, 60->4 slots per column
   const ncol=Math.ceil((SLOTS-firstSlot)/per);
+  const colMs=i=>start+(firstSlot+i*per)*15*60000;
+  const cols=[]; for(let i=0;i<ncol;i++) cols.push(etFull(colMs(i)));
   // aggregate
-  const g={}; const has=new Set();
+  const g={}, has=new Set();
   for(const [mi,slot,ci,n] of D.recent){ if(!eff.has(mi)||slot<firstSlot) continue;
     const col=Math.floor((slot-firstSlot)/per); (g[mi]||(g[mi]=new Array(ncol).fill(0)))[col]+=n; has.add(mi); }
   let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
-  // column time labels + day breaks
-  const colMs=i=>start+(firstSlot+i*per)*15*60000;
-  let head='<th class="corner">Match</th><th class="koh">Kickoff</th>';
-  let prevDay=null;
-  for(let i=0;i<ncol;i++){ const p=etParts(colMs(i)); const brk=p.day!==prevDay; prevDay=p.day;
-    const lbl = gran>=60 ? (p.hour+(p.dayPeriod?p.dayPeriod[0].toLowerCase():'')) : (brk?p.month+'/'+p.day:p.minute);
-    head+='<th class="h'+(brk?' daybrk':'')+'" title="'+p.month+'/'+p.day+' '+p.hour+':'+p.minute+(p.dayPeriod?' '+p.dayPeriod:'')+'">'+lbl+'</th>'; }
-  let h='<div style="color:var(--gray);font-size:12px;margin:0 0 6px">Last '+W+'h · '+(gran>=60?'hourly':'15-min')+' · times ET'+(Object.keys(g).length?'':' · no drops in window')+'</div>';
-  h+='<table><tr>'+head+'</tr>';
+  // header row 1: date band (spans each day's columns)
+  let band='<tr><th class="corner" colspan="2"></th>';
+  for(let j=0;j<ncol;){ let k=j; while(k<ncol&&cols[k].dayKey===cols[j].dayKey)k++;
+    band+='<th class="dateband" colspan="'+(k-j)+'">'+cols[j].dateLbl+'</th>'; j=k; }
+  band+='</tr>';
+  // header row 2: time-of-day
+  let trow='<tr><th class="corner">Match</th><th class="koh">Kickoff (ET)</th>';
+  for(let i=0;i<ncol;i++){ const p=cols[i], brk=i>0&&p.dayKey!==cols[i-1].dayKey;
+    const lbl=(gran>=60||p.minute==='00')?p.hourLbl:'';
+    trow+='<th class="h'+(brk?' daybrk':'')+'" title="'+p.full+'">'+lbl+'</th>'; }
+  trow+='</tr>';
+  let h='<div style="color:var(--gray);font-size:12px;margin:0 0 6px">Last <b>'+W+'h</b> · '+(gran>=60?'hourly':'15-min')+' columns · time of day (ET), oldest on the left'+(Object.keys(g).length?'':' · no drops in this window')+'</div>';
+  h+='<table>'+band+trow;
   for(const sec of SECTIONS){
     let rows=[...eff].filter(mi=>SEC[mi]===sec && has.has(mi)); if(!rows.length) continue;
     rows.sort((a,b)=>KO[a]-KO[b]);
     const ko=sec.startsWith("Group ")?'var(--green-dark)':'var(--red)';
     h+='<tr class="sec"><td class="sechd" colspan="'+(ncol+2)+'"><span class="dot" style="background:'+ko+'"></span>'+sec+'</td></tr>';
     for(const mi of rows){ const m=MTA[mi];
-      h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko">'+koShort(m.ko)+'</td>';
-      let prev=null;
-      for(let i=0;i<ncol;i++){ const brk=etParts(colMs(i)).day!==prev; prev=etParts(colMs(i)).day;
+      h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko">'+koLabel(m.ko)+'</td>';
+      for(let i=0;i<ncol;i++){ const brk=i>0&&cols[i].dayKey!==cols[i-1].dayKey;
         const v=g[mi][i]||0; const [bg,fg]=shade(v,mx);
         h+='<td class="'+(brk?'daybrk':'')+'" style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
       h+='</tr>'; }
   }
   h+='</table>'; $('#view').innerHTML=h;
 }
-function colHr(ms){const p=etParts(ms);return (+p.hour)+(p.dayPeriod?p.dayPeriod[0].toLowerCase():'');}
-function koShort(iso){const p=etParts(Date.parse(iso));return p.month+'/'+p.day;}
 
 // ---- URL state (shareable) ----
 function writeURL(){
