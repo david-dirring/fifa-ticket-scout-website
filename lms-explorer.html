@@ -115,6 +115,7 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
     <button data-v="games" class="on">Games v Match Day</button>
     <button data-v="recent">Recent Drops Trend</button>
     <button data-v="heatmap">Hour v Match Day (Heatmap)</button>
+    <button data-v="kostime">Kickoff v Drop Time</button>
   </div>
 </div>
 <div class="controls" id="filters" style="display:none">
@@ -207,11 +208,12 @@ function init(){
 const READS={
   games:'every row is a game, every column is how far before kickoff seats first showed up — hours on the left, days on the right. Darker means more seats appeared in that window. Hatched cells haven’t happened yet.',
   recent:'every row is a game, every column is a recent block of time, oldest on the left. Darker means more seats first showed up then. The buttons zoom from 15-minute blocks out to a 14-day daily view.',
-  heatmap:'every row is an hour of the day (ET), every column is how far before kickoff. Darker shows when seats tend to drop, added up across every game you’ve filtered to.'};
+  heatmap:'every row is an hour of the day (ET), every column is how far before kickoff. Darker shows when seats tend to drop, added up across every game you’ve filtered to.',
+  kostime:'every row is a game’s local kickoff time, every column is the local time seats first dropped — from 6pm the night before (left of the gold line) through kickoff (right). Darker = more seats.'};
 function syncTabs(){ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===state.view));
   $('#reads').innerHTML='<b>Reads as</b> — '+READS[state.view];
   $('#recctl').style.display = state.view==='recent'?'inline':'none';
-  $('#sortctl').style.display = state.view==='heatmap'?'none':'inline-flex';   // no rows to sort in the heatmap
+  $('#sortctl').style.display = (state.view==='heatmap'||state.view==='kostime')?'none':'inline-flex';   // these views aren't per-match
   segOn('#sortctl',document.querySelector('#sortctl button[data-s="'+state.sort+'"]')); syncRec(); }
 function syncRec(){ segOn('#recwin',document.querySelector('#recwin button[data-w="'+state.recW+'"]'));
   segOn('#recgran',document.querySelector('#recgran button[data-g="'+state.recG+'"]')); }
@@ -254,6 +256,7 @@ function effSet(){ const s=new Set(); MTA.forEach((m,i)=>{ if(scopeNoGame(m)&&st
 function render(){
   const eff=effSet();
   if(state.view==='heatmap') renderMatrix(eff);
+  else if(state.view==='kostime') renderKostime(eff);
   else if(state.view==='games') renderGames(eff);
   else renderRecent(eff);
   stickHead();
@@ -287,6 +290,43 @@ function renderMatrix(eff){
   let grand=col.reduce((a,b)=>a+b,0);
   h+='<tr><td class="lab">&Sigma;</td>'+col.map((s,bi)=>'<td class="tot'+(bi===sepIdx?' sep':'')+'">'+fmt(s)+'</td>').join('')+'<td class="rt">'+fmt(grand)+'</td></tr>';
   h+='</table>'; $('#view').innerHTML=h;
+}
+
+function renderKostime(eff){
+  if(!D.kostime){ $('#view').innerHTML='<div style="padding:24px;color:var(--gray)">No data.</div>'; return; }
+  const NC=D.categories.length, key=(s,hh)=>s*100+hh;
+  const g={}, gc={}, nm={}; let maxDay=0;          // g[koh][colkey]=count ; gc[koh][colkey]=[NC]
+  for(const [mi,seg,dh,ci,n] of D.kostime){ if(!eff.has(mi)) continue;
+    const koh=MTA[mi].kh; if(koh==null) continue;
+    const k=key(seg,dh);
+    (g[koh]||(g[koh]={}))[k]=(g[koh][k]||0)+n;
+    const gv=(gc[koh]||(gc[koh]={})); (gv[k]||(gv[k]=new Array(NC).fill(0)))[ci]+=n;
+    if(seg===1&&dh>maxDay) maxDay=dh;
+    (nm[koh]||(nm[koh]=new Set())).add(mi); }
+  const koHours=Object.keys(g).map(Number).sort((a,b)=>a-b);
+  if(!koHours.length){ $('#view').innerHTML='<div style="padding:24px;color:var(--gray)">No drops for this selection.</div>'; return; }
+  const cols=[]; for(let hh=18;hh<24;hh++) cols.push([0,hh]); for(let hh=0;hh<=maxDay;hh++) cols.push([1,hh]);
+  const BND=6;                                      // first match-day column index (gold divider)
+  let mx=1; for(const koh of koHours) for(const [s,hh] of cols){ const v=g[koh][key(s,hh)]||0; if(v>mx)mx=v; }
+  let h='<table><thead>';
+  h+='<tr><th class="corner" colspan="2"></th><th class="grp" colspan="'+BND+'">&larr; night before</th><th class="grp sep" colspan="'+(maxDay+1)+'">match day &rarr;</th><th></th></tr>';
+  h+='<tr><th class="corner">Kickoff</th><th class="koh">games</th>';
+  cols.forEach(([s,hh],i)=>{ h+='<th class="h'+(i===BND?' sep':'')+'">'+hlabel(hh)+'</th>'; });
+  h+='<th class="rth">&Sigma;</th></tr></thead><tbody>';
+  for(const koh of koHours){
+    h+='<tr><td class="g">'+hlabel(koh)+'</td><td class="ko">'+nm[koh].size+'</td>';
+    let rt=0;
+    cols.forEach(([s,hh],i)=>{ const v=g[koh][key(s,hh)]||0; rt+=v; const [bg,fg]=shade(v,mx);
+      const sep=i===BND?'sep ':''; const vec=(gc[koh]&&gc[koh][key(s,hh)])||[];
+      h+='<td class="'+sep.trim()+'"'+catTip(hlabel(koh)+' kickoff · drop '+(s===0?'night-before':'match-day')+' '+hlabel(hh),vec)+' style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; });
+    h+='<td class="rt">'+fmt(rt)+'</td></tr>';
+  }
+  h+='<tr><td class="g">&Sigma;</td><td class="ko"></td>';
+  let grand=0;
+  cols.forEach(([s,hh],i)=>{ let t=0; for(const koh of koHours)t+=g[koh][key(s,hh)]||0; grand+=t;
+    h+='<td class="tot'+(i===BND?' sep':'')+'">'+fmt(t)+'</td>'; });
+  h+='<td class="rt">'+fmt(grand)+'</td></tr></tbody></table>';
+  $('#view').innerHTML=h;
 }
 
 // Row ordering shared by the Games + Recent renderers. 'groups' = sectioned by
