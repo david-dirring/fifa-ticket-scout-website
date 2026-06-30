@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Stop alerts for a match · FIFA Ticket Scout</title>
+<style>
+  :root{--navy:#1a2332;--red:#c8102e;--green:#00a651;--gray:#64748b;--gray-light:#94a3b8;--border:#e2e8f0;--bg:#f8fafc;--white:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;padding:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--navy)}
+  .wrap{max-width:480px;margin:48px auto;padding:0 16px}
+  .card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .stripe{height:4px;background:linear-gradient(90deg,var(--red) 0%,var(--red) 33%,var(--green) 33%,var(--green) 66%,var(--navy) 66%,var(--navy) 100%)}
+  .body{padding:32px 28px}
+  .brand{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--gray);text-transform:uppercase}
+  h1{font-size:22px;font-weight:800;margin:8px 0 0}
+  p{font-size:15px;color:var(--gray);margin:12px 0 0;line-height:1.5}
+  button{margin-top:24px;background:var(--red);color:var(--white);border:none;padding:14px 28px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer}
+  button:disabled{opacity:.6;cursor:default}
+  a{color:var(--gray)}
+  .hidden{display:none}
+</style></head>
+<body>
+  <div class="wrap"><div class="card">
+    <div class="stripe"></div>
+    <div class="body">
+      <div class="brand">FIFA Ticket Scout</div>
+
+      <!-- confirm state -->
+      <div id="confirm">
+        <h1 id="confirm-h">Stop alerts for this match?</h1>
+        <p>This stops alerts for <b id="match-name">this match</b> only — your other alerts keep going. You can add it back anytime in the Chrome extension's Alerts tab.</p>
+        <button id="go" type="button">Stop alerts for this match</button>
+      </div>
+
+      <!-- done state -->
+      <div id="done" class="hidden">
+        <h1>Alerts stopped</h1>
+        <p>You won't get any more alerts for <b id="done-name">this match</b>. Your other alerts are unchanged. To add it back, edit your alerts in the Chrome extension or email <a href="mailto:david@pentupinnovation.com">david@pentupinnovation.com</a>.</p>
+      </div>
+
+      <!-- error state -->
+      <div id="error" class="hidden">
+        <h1>Something went wrong</h1>
+        <p id="errmsg">This link looks invalid. Use the link from a recent alert email, or email <a href="mailto:david@pentupinnovation.com">david@pentupinnovation.com</a>.</p>
+      </div>
+    </div>
+  </div></div>
+
+<script>
+  var FN = "https://yaydpahqlqwesqdddgfi.supabase.co/functions/v1/unsubscribe-game";
+  var qs = new URLSearchParams(location.search);
+  var lh = qs.get("lh") || "", m = qs.get("m") || "", sig = qs.get("sig") || "", t = qs.get("t") || "";
+  var $ = function(id){ return document.getElementById(id); };
+  function show(id){ ["confirm","done","error"].forEach(function(s){ $(s).classList.toggle("hidden", s!==id); }); }
+
+  // Set the match label via textContent (never innerHTML) so the URL can't inject markup.
+  if (t) { $("match-name").textContent = t; $("done-name").textContent = t; }
+
+  // No mutation on load (scanner-safe) — only the button POSTs.
+  if(!lh || !m || !sig){ show("error"); }
+
+  $("go").addEventListener("click", function(){
+    var btn = $("go"); btn.disabled = true; btn.textContent = "Working…";
+    fetch(FN + "?lh=" + encodeURIComponent(lh) + "&m=" + encodeURIComponent(m) + "&sig=" + encodeURIComponent(sig), { method: "POST" })
+      .then(function(r){ if(r.ok){ show("done"); } else { throw new Error(r.status); } })
+      .catch(function(){
+        $("errmsg").textContent = "We couldn't process that just now. Please try again, or email david@pentupinnovation.com.";
+        show("error");
+      });
+  });
+</script>
+</body></html>
