@@ -55,6 +55,7 @@ details.dd>summary::after{content:' \25BE';color:var(--gray)}
 .seg button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:var(--gray);padding:5px 10px;border-radius:6px;cursor:pointer}
 .seg button.on{background:var(--white);color:var(--navy);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .tog{border:1px solid var(--border);background:var(--white);border-radius:8px;padding:5px 11px;font:inherit;font-size:12.5px;font-weight:700;color:var(--gray);cursor:pointer}
+.newb{background:var(--red);color:#fff;font-size:8px;font-weight:800;letter-spacing:.06em;border-radius:4px;padding:1.5px 4px;vertical-align:2px;margin-left:2px}
 .tog[aria-pressed="true"]{border-color:var(--navy);color:var(--navy);background:var(--light)}
 .tog:focus-visible{outline:2px solid var(--navy);outline-offset:1px}
 tr.cat td.g{font-weight:600;color:var(--slate);font-size:10px;padding-left:22px}
@@ -133,8 +134,8 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
   <span id="recctl" style="display:none">
     <span class="seg" id="recwin"><button data-w="24">24h</button><button data-w="36" class="on">36h</button><button data-w="48">48h</button><button data-w="72">72h</button><button data-w="336">14d</button></span>
     <span class="seg" id="recgran"><button data-g="15">15-min</button><button data-g="60" class="on">hourly</button><button data-g="1440">daily</button></span>
-    <span class="seg" id="recmetric"><button data-m="seats" class="on">Seats</button><button data-m="price">Avg Price</button></span>
-    <button class="tog" id="reccat" aria-pressed="false">Categories</button>
+    <span class="seg" id="recmetric"><button data-m="seats" class="on">Seats</button><button data-m="price">Avg Price <span class="newb">NEW</span></button></span>
+    <button class="tog" id="reccat" aria-pressed="false">Categories <span class="newb">NEW</span></button>
   </span>
 </div>
 
