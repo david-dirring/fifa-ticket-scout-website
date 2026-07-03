@@ -172,6 +172,7 @@ function shadePrice(v,mx){ if(v==null) return ["#f1f5f9","#cbd5e1"]; let t=Math.
   else{let u=(t-0.5)/0.5; r=lerp(0xf5,0xa5,u);g=lerp(0xa6,0x0d,u);b=lerp(0x23,0x1f,u);}
   return ['rgb('+r+','+g+','+b+')', t<0.42?'#5c3200':'#fff']; }
 function fmtPrice(v){ if(v==null) return ''; v=Math.round(v); return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v; }
+const FINAL_RED=['#a50d1f','#fff']; // M104 (the Final): always darkest red, excluded from the price scale
 function pctile(a,p){ if(!a.length) return 1; const s=[...a].sort((x,y)=>x-y); return Math.max(1,s[Math.min(s.length-1,Math.floor(p*s.length))]); }
 // categories hidden from the drilldown rows (still counted in match totals + tooltips)
 function drillCats(){ return D.categories.map((c,i)=>i).filter(i=>!/access|other/i.test(D.categories[i])); }
@@ -409,8 +410,9 @@ function renderRecentDaily(eff){
   const rowPrice=(mi,i)=>{ let s=0,n=0; for(let c=0;c<NC;c++){ s+=gs[mi][i][c]; n+=gn[mi][i][c]; } return n?s/n:null; };
   const catPrice=(mi,i,c)=> gn[mi][i][c] ? gs[mi][i][c]/gn[mi][i][c] : null;
   let mx=1;
-  if(price){ const vals=[]; for(const mi in g) for(let i=0;i<ndays;i++){ const p=rowPrice(mi,i); if(p!=null) vals.push(p);
-      if(state.recCat) for(const c of CATS){ const q=catPrice(mi,i,c); if(q!=null) vals.push(q); } }
+  if(price){ const vals=[]; for(const mi in g){ if(MTA[mi].n===104) continue;   // Final skews the scale
+      for(let i=0;i<ndays;i++){ const p=rowPrice(mi,i); if(p!=null) vals.push(p);
+        if(state.recCat) for(const c of CATS){ const q=catPrice(mi,i,c); if(q!=null) vals.push(q); } } }
     mx=pctile(vals,0.95); }
   else for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
   let trow='<tr><th class="corner">Match</th><th class="koh">Kickoff (ET)</th>';
@@ -424,7 +426,7 @@ function renderRecentDaily(eff){
     for(const mi of grp.mis){ const m=MTA[mi];
       h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko">'+koLabel(m.ko)+'</td>';
       for(let i=0;i<ndays;i++){ const v=g[mi]?(g[mi][i]||0):0; let bg,fg,txt,tip;
-        if(price){ const p=g[mi]?rowPrice(mi,i):null; [bg,fg]=shadePrice(p,mx); txt=fmtPrice(p);
+        if(price){ const p=g[mi]?rowPrice(mi,i):null; [bg,fg]=(p!=null&&m.n===104)?FINAL_RED:shadePrice(p,mx); txt=fmtPrice(p);
           tip=' title="#'+m.n+' '+m.m+' · '+cols[i].full+' — '+v+' seat'+(v===1?'':'s')+(p!=null?' · avg '+fmtPrice(p):'')+'"'; }
         else { [bg,fg]=shade(v,mx); txt=fmt(v); tip=catTip('#'+m.n+' '+m.m+' · '+cols[i].full,(gc[mi]&&gc[mi][i])||[]); }
         h+='<td'+tip+' style="background:'+bg+';color:'+fg+'">'+txt+'</td>'; }
@@ -433,7 +435,7 @@ function renderRecentDaily(eff){
         let any=false; for(let i=0;i<ndays;i++) if(gc[mi][i][c]){any=true;break;} if(!any) continue;
         h+='<tr class="cat"><td class="g">'+D.categories[c]+'</td><td class="ko"></td>';
         for(let i=0;i<ndays;i++){ const n=gc[mi][i][c]; let bg,fg,txt;
-          if(price){ const p=catPrice(mi,i,c); [bg,fg]=shadePrice(p,mx); txt=fmtPrice(p); }
+          if(price){ const p=catPrice(mi,i,c); [bg,fg]=(p!=null&&m.n===104)?FINAL_RED:shadePrice(p,mx); txt=fmtPrice(p); }
           else { [bg,fg]=shade(n,mx); txt=fmt(n); }
           const ptxt=price&&gn[mi][i][c]?' · avg '+fmtPrice(gs[mi][i][c]/gn[mi][i][c]):'';
           h+='<td title="'+D.categories[c]+' · '+cols[i].full+' — '+n+' seat'+(n===1?'':'s')+ptxt+'" style="background:'+bg+';color:'+fg+'">'+txt+'</td>'; }
@@ -465,8 +467,9 @@ function renderRecent(eff){
   const rowPrice=(mi,i)=>{ let s=0,n=0; for(let c=0;c<NC;c++){ s+=gs[mi][i][c]; n+=gn[mi][i][c]; } return n?s/n:null; };
   const catPrice=(mi,i,c)=> gn[mi][i][c] ? gs[mi][i][c]/gn[mi][i][c] : null;
   let mx=1;
-  if(price){ const vals=[]; for(const mi in g) for(let i=0;i<ncol;i++){ const p=rowPrice(mi,i); if(p!=null) vals.push(p);
-      if(state.recCat) for(const c of CATS){ const q=catPrice(mi,i,c); if(q!=null) vals.push(q); } }
+  if(price){ const vals=[]; for(const mi in g){ if(MTA[mi].n===104) continue;   // Final skews the scale
+      for(let i=0;i<ncol;i++){ const p=rowPrice(mi,i); if(p!=null) vals.push(p);
+        if(state.recCat) for(const c of CATS){ const q=catPrice(mi,i,c); if(q!=null) vals.push(q); } } }
     mx=pctile(vals,0.95); }
   else for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
   // header row 1: date band (spans each day's columns)
@@ -490,7 +493,7 @@ function renderRecent(eff){
       h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko">'+koLabel(m.ko)+'</td>';
       for(let i=0;i<ncol;i++){ const brk=i>0&&cols[i].dayKey!==cols[i-1].dayKey;
         const v=g[mi]?(g[mi][i]||0):0; let bg,fg,txt,tip;
-        if(price){ const p=g[mi]?rowPrice(mi,i):null; [bg,fg]=shadePrice(p,mx); txt=fmtPrice(p);
+        if(price){ const p=g[mi]?rowPrice(mi,i):null; [bg,fg]=(p!=null&&m.n===104)?FINAL_RED:shadePrice(p,mx); txt=fmtPrice(p);
           tip=' title="#'+m.n+' '+m.m+' · '+cols[i].full+' — '+v+' seat'+(v===1?'':'s')+(p!=null?' · avg '+fmtPrice(p):'')+'"'; }
         else { [bg,fg]=shade(v,mx); txt=fmt(v); tip=catTip('#'+m.n+' '+m.m+' · '+cols[i].full,(gc[mi]&&gc[mi][i])||[]); }
         h+='<td class="'+(brk?'daybrk':'')+'"'+tip+' style="background:'+bg+';color:'+fg+'">'+txt+'</td>'; }
@@ -501,7 +504,7 @@ function renderRecent(eff){
         h+='<tr class="cat"><td class="g">'+D.categories[c]+'</td><td class="ko"></td>';
         for(let i=0;i<ncol;i++){ const brk=i>0&&cols[i].dayKey!==cols[i-1].dayKey;
           const n=gc[mi][i][c]; let bg,fg,txt;
-          if(price){ const p=catPrice(mi,i,c); [bg,fg]=shadePrice(p,mx); txt=fmtPrice(p); }
+          if(price){ const p=catPrice(mi,i,c); [bg,fg]=(p!=null&&m.n===104)?FINAL_RED:shadePrice(p,mx); txt=fmtPrice(p); }
           else { [bg,fg]=shade(n,mx); txt=fmt(n); }
           const ptxt=price&&gn[mi][i][c]?' · avg '+fmtPrice(gs[mi][i][c]/gn[mi][i][c]):'';
           h+='<td class="'+(brk?'daybrk':'')+'" title="'+D.categories[c]+' · '+cols[i].full+' — '+n+' seat'+(n===1?'':'s')+ptxt+'" style="background:'+bg+';color:'+fg+'">'+txt+'</td>'; }
