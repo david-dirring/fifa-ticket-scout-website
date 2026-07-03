@@ -175,8 +175,8 @@ function shadePrice(v,mx){ if(v==null) return ["#f1f5f9","#cbd5e1"]; let t=Math.
 function fmtPrice(v){ if(v==null) return ''; v=Math.round(v); return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v; }
 const FINAL_RED=['#a50d1f','#fff']; // M104 (the Final): always darkest red, excluded from the price scale
 function pctile(a,p){ if(!a.length) return 1; const s=[...a].sort((x,y)=>x-y); return Math.max(1,s[Math.min(s.length-1,Math.floor(p*s.length))]); }
-// categories hidden from the drilldown rows (still counted in match totals + tooltips)
-function drillCats(){ return D.categories.map((c,i)=>i).filter(i=>!/access|other/i.test(D.categories[i])); }
+// all categories drill (rows only render when they have seats), so visible rows sum to the match total
+function drillCats(){ return D.categories.map((c,i)=>i); }
 // Hover tooltip: exact total + per-category split for a cell. vec = counts per D.categories.
 function bucketLbl(i){ return i<4?D.buckets[i]+' before kickoff':D.buckets[i]+' days before kickoff'; }
 function catTip(ctx, vec){ const tot=vec.reduce((a,b)=>a+b,0); if(!tot) return '';
