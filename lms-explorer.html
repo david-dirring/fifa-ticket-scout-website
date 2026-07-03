@@ -120,8 +120,8 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
 
 <div class="controls" id="controls" style="display:none">
   <div class="tabs" id="tabs">
-    <button data-v="games" class="on">Games v Match Day</button>
-    <button data-v="recent">Recent Drops Trend</button>
+    <button data-v="games">Games v Match Day</button>
+    <button data-v="recent" class="on">Recent Drops Trend</button>
     <button data-v="heatmap">Hour v Match Day (Heatmap)</button>
     <button data-v="kostime">Kickoff v Drop Time</button>
   </div>
@@ -207,7 +207,7 @@ function init(){
   $('#refreshed').innerHTML='Last refreshed <b>'+ago+'</b> · '+new Date(g).toLocaleString('en-US',{timeZone:'America/New_York',dateStyle:'medium',timeStyle:'short'})+' ET';
   // default state
   const cities=[...new Set(MTA.map(m=>m.city))].sort();
-  state={ view:'games', cities:new Set(cities), stages:new Set(STAGE_OPTS.map(s=>s[0])),
+  state={ view:'recent', cities:new Set(cities), stages:new Set(STAGE_OPTS.map(s=>s[0])),
     games:new Set(MTA.map(m=>m.n)), recW:36, recG:60, recM:'seats', recCat:false, sort:'groups', allCities:cities };
   readURL();
   buildCityPanel(); buildStagePanel();
