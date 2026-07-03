@@ -54,6 +54,12 @@ details.dd>summary::after{content:' \25BE';color:var(--gray)}
 .seg{display:inline-flex;background:var(--band);border-radius:8px;padding:2px}
 .seg button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:var(--gray);padding:5px 10px;border-radius:6px;cursor:pointer}
 .seg button.on{background:var(--white);color:var(--navy);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.tog{border:1px solid var(--border);background:var(--white);border-radius:8px;padding:5px 11px;font:inherit;font-size:12.5px;font-weight:700;color:var(--gray);cursor:pointer}
+.tog[aria-pressed="true"]{border-color:var(--navy);color:var(--navy);background:var(--light)}
+.tog:focus-visible{outline:2px solid var(--navy);outline-offset:1px}
+tr.cat td.g{font-weight:600;color:var(--slate);font-size:10px;padding-left:22px}
+tr.cat td{font-size:10px}
+.sb.sbp{background:linear-gradient(90deg,#fff4df,#f5a623,#a50d1f)}
 .reclbl{color:var(--gray);font-size:12px;font-weight:700;margin-left:4px}
 
 .reads{margin:2px 20px 10px;color:var(--gray);font-size:12.5px;line-height:1.5;max-width:940px}
@@ -127,6 +133,8 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
   <span id="recctl" style="display:none">
     <span class="seg" id="recwin"><button data-w="24">24h</button><button data-w="36" class="on">36h</button><button data-w="48">48h</button><button data-w="72">72h</button><button data-w="336">14d</button></span>
     <span class="seg" id="recgran"><button data-g="15">15-min</button><button data-g="60" class="on">hourly</button><button data-g="1440">daily</button></span>
+    <span class="seg" id="recmetric"><button data-m="seats" class="on">Seats</button><button data-m="price">Avg Price</button></span>
+    <button class="tog" id="reccat" aria-pressed="false">Categories</button>
   </span>
 </div>
 
@@ -134,7 +142,7 @@ th.dateband{text-align:left;font-weight:800;color:var(--navy);font-size:11.5px;p
 <div class="reads" id="reads" style="display:none"></div>
 <div id="view"></div>
 <div class="legend" id="legend" style="display:none">
-  <span class="sw">fewer <span class="sb"></span> more seats</span>
+  <span class="sw" id="legscale">fewer <span class="sb"></span> more seats</span>
   <span class="sw"><span class="ph"></span> window hasn't started yet</span>
   <span><span class="dot" style="background:var(--green-dark)"></span>group</span>
   <span><span class="dot" style="background:var(--red)"></span>knockout</span>
@@ -157,6 +165,16 @@ function shade(v,mx){ if(!v) return ["#f1f5f9","#cbd5e1"]; let t=Math.sqrt(Math.
   else{let u=(t-0.6)/0.4; r=lerp(0,0xf5,u);g=lerp(0x91,0xa6,u);b=lerp(0x46,0x23,u);}
   return ['rgb('+r+','+g+','+b+')', t<0.32?'#15324a':'#fff']; }
 function fmt(v){return !v?'':v>=1000?(v/1000).toFixed(1)+'k':''+v}
+// Avg-price metric: absolute amber->red ramp (#fff4df -> #f5a623 -> #a50d1f), scale capped at p95
+// so one $30k+ hospitality debut doesn't wash out the everyday range.
+function shadePrice(v,mx){ if(v==null) return ["#f1f5f9","#cbd5e1"]; let t=Math.sqrt(Math.min(v,mx)/mx),r,g,b;
+  if(t<0.5){let u=t/0.5; r=lerp(0xff,0xf5,u);g=lerp(0xf4,0xa6,u);b=lerp(0xdf,0x23,u);}
+  else{let u=(t-0.5)/0.5; r=lerp(0xf5,0xa5,u);g=lerp(0xa6,0x0d,u);b=lerp(0x23,0x1f,u);}
+  return ['rgb('+r+','+g+','+b+')', t<0.42?'#5c3200':'#fff']; }
+function fmtPrice(v){ if(v==null) return ''; v=Math.round(v); return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v; }
+function pctile(a,p){ if(!a.length) return 1; const s=[...a].sort((x,y)=>x-y); return Math.max(1,s[Math.min(s.length-1,Math.floor(p*s.length))]); }
+// categories hidden from the drilldown rows (still counted in match totals + tooltips)
+function drillCats(){ return D.categories.map((c,i)=>i).filter(i=>!/access|other/i.test(D.categories[i])); }
 // Hover tooltip: exact total + per-category split for a cell. vec = counts per D.categories.
 function bucketLbl(i){ return i<4?D.buckets[i]+' before kickoff':D.buckets[i]+' days before kickoff'; }
 function catTip(ctx, vec){ const tot=vec.reduce((a,b)=>a+b,0); if(!tot) return '';
@@ -188,7 +206,7 @@ function init(){
   // default state
   const cities=[...new Set(MTA.map(m=>m.city))].sort();
   state={ view:'games', cities:new Set(cities), stages:new Set(STAGE_OPTS.map(s=>s[0])),
-    games:new Set(MTA.map(m=>m.n)), recW:36, recG:60, sort:'groups', allCities:cities };
+    games:new Set(MTA.map(m=>m.n)), recW:36, recG:60, recM:'seats', recCat:false, sort:'groups', allCities:cities };
   readURL();
   buildCityPanel(); buildStagePanel();
   rebuildGamePanel();
@@ -200,6 +218,8 @@ function init(){
   $('#recgran').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recG=+b.dataset.g;
     if(!DESKTOP && state.recG<1440 && state.recW>72) state.recW=72;     // mobile: fine grain -> <=72h
     syncRec(); writeURL(); render();};
+  $('#recmetric').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.recM=b.dataset.m; syncRec(); writeURL(); render();};
+  $('#reccat').onclick=()=>{ state.recCat=!state.recCat; syncRec(); writeURL(); render(); };
   $('#sortctl').onclick=e=>{const b=e.target.closest('button'); if(!b)return; state.sort=b.dataset.s; segOn('#sortctl',b); writeURL(); render();};
   $('#loading').style.display='none'; $('#controls').style.display='flex'; $('#filters').style.display='flex'; $('#reads').style.display='block'; $('#legend').style.display='flex';
   syncTabs(); render(); fitView();
@@ -208,7 +228,7 @@ function init(){
 
 const READS={
   games:'every row is a game, every column is how far before kickoff seats first showed up — hours on the left, days on the right. Darker means more seats appeared in that window. Hatched cells haven’t happened yet.',
-  recent:'every row is a game, every column is a recent block of time, oldest on the left. Darker means more seats first showed up then. The buttons zoom from 15-minute blocks out to a 14-day daily view.',
+  recent:'every row is a game, every column is a recent block of time, oldest on the left. Darker means more seats first showed up then. The buttons zoom from 15-minute blocks out to a 14-day daily view. Switch the metric to <b>Avg Price</b> to color by the average price seats debuted at (amber → red), or hit <b>Categories</b> to split each game by ticket category.',
   heatmap:'every row is an hour of the day (ET), every column is how far before kickoff. Darker shows when seats tend to drop, added up across every game you’ve filtered to.',
   kostime:'every row is a game’s local kickoff time, every column is the local time seats first dropped — from 6pm the night before (left of the gold line) through kickoff (right). Darker = more seats.'};
 function syncTabs(){ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===state.view));
@@ -217,7 +237,9 @@ function syncTabs(){ document.querySelectorAll('#tabs button').forEach(b=>b.clas
   $('#sortctl').style.display = (state.view==='heatmap'||state.view==='kostime')?'none':'inline-flex';   // these views aren't per-match
   segOn('#sortctl',document.querySelector('#sortctl button[data-s="'+state.sort+'"]')); syncRec(); }
 function syncRec(){ segOn('#recwin',document.querySelector('#recwin button[data-w="'+state.recW+'"]'));
-  segOn('#recgran',document.querySelector('#recgran button[data-g="'+state.recG+'"]')); }
+  segOn('#recgran',document.querySelector('#recgran button[data-g="'+state.recG+'"]'));
+  segOn('#recmetric',document.querySelector('#recmetric button[data-m="'+state.recM+'"]'));
+  $('#reccat').setAttribute('aria-pressed', state.recCat?'true':'false'); }
 function segOn(sel,btn){document.querySelectorAll(sel+' button').forEach(b=>b.classList.toggle('on',b===btn));}
 
 function chkPanel(panel,items,getOn,onToggle,grouped){
@@ -256,6 +278,9 @@ function effSet(){ const s=new Set(); MTA.forEach((m,i)=>{ if(scopeNoGame(m)&&st
 
 function render(){
   const eff=effSet();
+  const price=state.view==='recent'&&state.recM==='price';
+  $('#legscale').innerHTML = price ? 'cheaper <span class="sb sbp"></span> pricier'
+                                   : 'fewer <span class="sb"></span> more seats';
   if(state.view==='heatmap') renderMatrix(eff);
   else if(state.view==='kostime') renderKostime(eff);
   else if(state.view==='games') renderGames(eff);
@@ -373,11 +398,21 @@ function dayLabel(iso,idx){ const [Y,M,Dd]=iso.split('-').map(Number);
 function renderRecentDaily(eff){
   const ND=D.daily_days, ndays=Math.min(ND, Math.max(1, Math.round(state.recW/24))), firstDay=ND-ndays;
   const cols=[]; for(let i=0;i<ndays;i++) cols.push(dayLabel(D.daily_start, firstDay+i));
-  const NC=D.categories.length, g={}, gc={}, has=new Set();
-  for(const [mi,day,ci,n] of D.daily){ if(!eff.has(mi)||day<firstDay) continue;
-    if(!g[mi]){ g[mi]=new Array(ndays).fill(0); gc[mi]=Array.from({length:ndays},()=>new Array(NC).fill(0)); }
-    g[mi][day-firstDay]+=n; gc[mi][day-firstDay][ci]+=n; has.add(mi); }
-  let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
+  const NC=D.categories.length, g={}, gc={}, gs={}, gn={}, has=new Set();
+  for(const [mi,day,ci,n,avg] of D.daily){ if(!eff.has(mi)||day<firstDay) continue;
+    if(!g[mi]){ g[mi]=new Array(ndays).fill(0); gc[mi]=Array.from({length:ndays},()=>new Array(NC).fill(0));
+      gs[mi]=Array.from({length:ndays},()=>new Array(NC).fill(0)); gn[mi]=Array.from({length:ndays},()=>new Array(NC).fill(0)); }
+    g[mi][day-firstDay]+=n; gc[mi][day-firstDay][ci]+=n;
+    if(avg!=null){ gs[mi][day-firstDay][ci]+=n*avg; gn[mi][day-firstDay][ci]+=n; }
+    has.add(mi); }
+  const price=state.recM==='price', CATS=drillCats();
+  const rowPrice=(mi,i)=>{ let s=0,n=0; for(let c=0;c<NC;c++){ s+=gs[mi][i][c]; n+=gn[mi][i][c]; } return n?s/n:null; };
+  const catPrice=(mi,i,c)=> gn[mi][i][c] ? gs[mi][i][c]/gn[mi][i][c] : null;
+  let mx=1;
+  if(price){ const vals=[]; for(const mi in g) for(let i=0;i<ndays;i++){ const p=rowPrice(mi,i); if(p!=null) vals.push(p);
+      if(state.recCat) for(const c of CATS){ const q=catPrice(mi,i,c); if(q!=null) vals.push(q); } }
+    mx=pctile(vals,0.95); }
+  else for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
   let trow='<tr><th class="corner">Match</th><th class="koh">Kickoff (ET)</th>';
   for(let i=0;i<ndays;i++) trow+='<th class="h" title="'+cols[i].full+'"><div style="color:var(--gray);font-weight:700;font-size:10px">'+cols[i].wd+'</div>'+cols[i].md+'</th>';
   trow+='</tr>';
@@ -388,9 +423,22 @@ function renderRecentDaily(eff){
       h+='<tr class="sec"><td class="sechd" colspan="'+(ndays+2)+'"><span class="dot" style="background:'+ko+'"></span>'+grp.sec+'</td></tr>'; }
     for(const mi of grp.mis){ const m=MTA[mi];
       h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko">'+koLabel(m.ko)+'</td>';
-      for(let i=0;i<ndays;i++){ const v=g[mi][i]||0; const [bg,fg]=shade(v,mx);
-        h+='<td'+catTip('#'+m.n+' '+m.m+' · '+cols[i].full,(gc[mi]&&gc[mi][i])||[])+' style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
-      h+='</tr>'; }
+      for(let i=0;i<ndays;i++){ const v=g[mi]?(g[mi][i]||0):0; let bg,fg,txt,tip;
+        if(price){ const p=g[mi]?rowPrice(mi,i):null; [bg,fg]=shadePrice(p,mx); txt=fmtPrice(p);
+          tip=' title="#'+m.n+' '+m.m+' · '+cols[i].full+' — '+v+' seat'+(v===1?'':'s')+(p!=null?' · avg '+fmtPrice(p):'')+'"'; }
+        else { [bg,fg]=shade(v,mx); txt=fmt(v); tip=catTip('#'+m.n+' '+m.m+' · '+cols[i].full,(gc[mi]&&gc[mi][i])||[]); }
+        h+='<td'+tip+' style="background:'+bg+';color:'+fg+'">'+txt+'</td>'; }
+      h+='</tr>';
+      if(state.recCat&&g[mi]){ for(const c of CATS){
+        let any=false; for(let i=0;i<ndays;i++) if(gc[mi][i][c]){any=true;break;} if(!any) continue;
+        h+='<tr class="cat"><td class="g">'+D.categories[c]+'</td><td class="ko"></td>';
+        for(let i=0;i<ndays;i++){ const n=gc[mi][i][c]; let bg,fg,txt;
+          if(price){ const p=catPrice(mi,i,c); [bg,fg]=shadePrice(p,mx); txt=fmtPrice(p); }
+          else { [bg,fg]=shade(n,mx); txt=fmt(n); }
+          const ptxt=price&&gn[mi][i][c]?' · avg '+fmtPrice(gs[mi][i][c]/gn[mi][i][c]):'';
+          h+='<td title="'+D.categories[c]+' · '+cols[i].full+' — '+n+' seat'+(n===1?'':'s')+ptxt+'" style="background:'+bg+';color:'+fg+'">'+txt+'</td>'; }
+        h+='</tr>'; } }
+    }
   }
   h+='</tbody></table>'; $('#view').innerHTML=h;
 }
@@ -403,13 +451,24 @@ function renderRecent(eff){
   const ncol=Math.ceil((SLOTS-firstSlot)/per);
   const colMs=i=>start+(firstSlot+i*per)*15*60000;
   const cols=[]; for(let i=0;i<ncol;i++) cols.push(etFull(colMs(i)));
-  // aggregate
-  const NC=D.categories.length, g={}, gc={}, has=new Set();
-  for(const [mi,slot,ci,n] of D.recent){ if(!eff.has(mi)||slot<firstSlot) continue;
+  // aggregate counts + price-weighted sums (rows are [mi,slot,ci,n,avg]; avg may be null/absent)
+  const NC=D.categories.length, g={}, gc={}, gs={}, gn={}, has=new Set();
+  for(const [mi,slot,ci,n,avg] of D.recent){ if(!eff.has(mi)||slot<firstSlot) continue;
     const col=Math.floor((slot-firstSlot)/per);
-    if(!g[mi]){ g[mi]=new Array(ncol).fill(0); gc[mi]=Array.from({length:ncol},()=>new Array(NC).fill(0)); }
-    g[mi][col]+=n; gc[mi][col][ci]+=n; has.add(mi); }
-  let mx=1; for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
+    if(!g[mi]){ g[mi]=new Array(ncol).fill(0); gc[mi]=Array.from({length:ncol},()=>new Array(NC).fill(0));
+      gs[mi]=Array.from({length:ncol},()=>new Array(NC).fill(0)); gn[mi]=Array.from({length:ncol},()=>new Array(NC).fill(0)); }
+    g[mi][col]+=n; gc[mi][col][ci]+=n;
+    if(avg!=null){ gs[mi][col][ci]+=n*avg; gn[mi][col][ci]+=n; }
+    has.add(mi); }
+  // blended price = sum(count*price)/sum(count) across categories with a price
+  const price=state.recM==='price', CATS=drillCats();
+  const rowPrice=(mi,i)=>{ let s=0,n=0; for(let c=0;c<NC;c++){ s+=gs[mi][i][c]; n+=gn[mi][i][c]; } return n?s/n:null; };
+  const catPrice=(mi,i,c)=> gn[mi][i][c] ? gs[mi][i][c]/gn[mi][i][c] : null;
+  let mx=1;
+  if(price){ const vals=[]; for(const mi in g) for(let i=0;i<ncol;i++){ const p=rowPrice(mi,i); if(p!=null) vals.push(p);
+      if(state.recCat) for(const c of CATS){ const q=catPrice(mi,i,c); if(q!=null) vals.push(q); } }
+    mx=pctile(vals,0.95); }
+  else for(const mi in g) for(const v of g[mi]) if(v>mx)mx=v;
   // header row 1: date band (spans each day's columns)
   let band='<tr><th class="corner" colspan="2"></th>';
   for(let j=0;j<ncol;){ let k=j; while(k<ncol&&cols[k].dayKey===cols[j].dayKey)k++;
@@ -430,9 +489,24 @@ function renderRecent(eff){
     for(const mi of grp.mis){ const m=MTA[mi];
       h+='<tr><td class="g">#'+m.n+' '+m.m+'</td><td class="ko">'+koLabel(m.ko)+'</td>';
       for(let i=0;i<ncol;i++){ const brk=i>0&&cols[i].dayKey!==cols[i-1].dayKey;
-        const v=g[mi][i]||0; const [bg,fg]=shade(v,mx);
-        h+='<td class="'+(brk?'daybrk':'')+'"'+catTip('#'+m.n+' '+m.m+' · '+cols[i].full,(gc[mi]&&gc[mi][i])||[])+' style="background:'+bg+';color:'+fg+'">'+fmt(v)+'</td>'; }
-      h+='</tr>'; }
+        const v=g[mi]?(g[mi][i]||0):0; let bg,fg,txt,tip;
+        if(price){ const p=g[mi]?rowPrice(mi,i):null; [bg,fg]=shadePrice(p,mx); txt=fmtPrice(p);
+          tip=' title="#'+m.n+' '+m.m+' · '+cols[i].full+' — '+v+' seat'+(v===1?'':'s')+(p!=null?' · avg '+fmtPrice(p):'')+'"'; }
+        else { [bg,fg]=shade(v,mx); txt=fmt(v); tip=catTip('#'+m.n+' '+m.m+' · '+cols[i].full,(gc[mi]&&gc[mi][i])||[]); }
+        h+='<td class="'+(brk?'daybrk':'')+'"'+tip+' style="background:'+bg+';color:'+fg+'">'+txt+'</td>'; }
+      h+='</tr>';
+      // category drilldown: one indented row per category with any seats in the window
+      if(state.recCat&&g[mi]){ for(const c of CATS){
+        let any=false; for(let i=0;i<ncol;i++) if(gc[mi][i][c]){any=true;break;} if(!any) continue;
+        h+='<tr class="cat"><td class="g">'+D.categories[c]+'</td><td class="ko"></td>';
+        for(let i=0;i<ncol;i++){ const brk=i>0&&cols[i].dayKey!==cols[i-1].dayKey;
+          const n=gc[mi][i][c]; let bg,fg,txt;
+          if(price){ const p=catPrice(mi,i,c); [bg,fg]=shadePrice(p,mx); txt=fmtPrice(p); }
+          else { [bg,fg]=shade(n,mx); txt=fmt(n); }
+          const ptxt=price&&gn[mi][i][c]?' · avg '+fmtPrice(gs[mi][i][c]/gn[mi][i][c]):'';
+          h+='<td class="'+(brk?'daybrk':'')+'" title="'+D.categories[c]+' · '+cols[i].full+' — '+n+' seat'+(n===1?'':'s')+ptxt+'" style="background:'+bg+';color:'+fg+'">'+txt+'</td>'; }
+        h+='</tr>'; } }
+    }
   }
   h+='</tbody></table>'; $('#view').innerHTML=h;
 }
@@ -444,7 +518,8 @@ function writeURL(){
   if(state.stages.size!==STAGE_OPTS.length) q.set('stage',[...state.stages].join(','));
   const inscope=MTA.filter(scopeNoGame).length;
   if(state.games.size!==inscope) q.set('game',[...state.games].join(','));
-  if(state.view==='recent'){ q.set('w',state.recW); q.set('gr',state.recG); }
+  if(state.view==='recent'){ q.set('w',state.recW); q.set('gr',state.recG);
+    if(state.recM!=='seats') q.set('m',state.recM); if(state.recCat) q.set('cat','1'); }
   if(state.view!=='heatmap' && state.sort!=='groups') q.set('s',state.sort);
   history.replaceState(null,'','?'+q.toString());
 }
@@ -455,6 +530,7 @@ function readURL(){
   if(q.get('stage')) state.stages=new Set(q.get('stage').split(','));
   if(q.get('game')) state.games=new Set(q.get('game').split(',').map(Number));
   if(q.get('w')) state.recW=+q.get('w'); if(q.get('gr')) state.recG=+q.get('gr');
+  if(q.get('m')==='price') state.recM='price'; if(q.get('cat')==='1') state.recCat=true;
   if(q.get('s')) state.sort=q.get('s');
   if(!DESKTOP && state.recW>72) state.recG=1440;   // mobile: 14d implies daily
 }
