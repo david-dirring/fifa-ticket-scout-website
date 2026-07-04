@@ -193,7 +193,13 @@ function etFull(ms){const p={};ETF2.formatToParts(new Date(ms)).forEach(x=>p[x.t
 
 let D, MTA, KO, SEC, midxByN, state;
 
-fetch('data/lms_drops.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{ D=d; init(); })
+// Data comes from raw.githubusercontent (live the moment the export pushes, ~5-min
+// edge cache) so freshness doesn't depend on a GitHub Pages deploy succeeding.
+// Falls back to the Pages-deployed copy (at worst the last successful deploy).
+const DATA_RAW='https://raw.githubusercontent.com/david-dirring/fifa-ticket-scout-website/main/data/lms_drops.json';
+fetch(DATA_RAW,{cache:'no-store'}).then(r=>{ if(!r.ok) throw new Error('raw '+r.status); return r.json(); })
+  .catch(()=>fetch('data/lms_drops.json',{cache:'no-store'}).then(r=>r.json()))
+  .then(d=>{ D=d; init(); })
   .catch(e=>{ $('#loading').textContent='Could not load data.'; console.error(e); });
 
 function init(){
